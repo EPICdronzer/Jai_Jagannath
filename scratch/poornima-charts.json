@@ -1,0 +1,1244 @@
+{
+  "D-1_rasi": {
+    "Ascendant": {
+      "sign": "Pisces",
+      "longitude": 4.332
+    },
+    "Sun": {
+      "sign": "Aquarius",
+      "longitude": 11.6581
+    },
+    "Moon": {
+      "sign": "Leo",
+      "longitude": 10.5311
+    },
+    "Mars": {
+      "sign": "Sagittarius",
+      "longitude": 18.3829
+    },
+    "Mercury": {
+      "sign": "Aquarius",
+      "longitude": 19.8067
+    },
+    "Jupiter": {
+      "sign": "Virgo",
+      "longitude": 24.1748
+    },
+    "Venus": {
+      "sign": "Aquarius",
+      "longitude": 2.9286
+    },
+    "Saturn": {
+      "sign": "Gemini",
+      "longitude": 27.0793
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 29.7631
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 29.7631
+    },
+    "Uranus": {
+      "sign": "Aquarius",
+      "longitude": 12.767
+    },
+    "Neptune": {
+      "sign": "Capricorn",
+      "longitude": 21.9133
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 0.3258
+    }
+  },
+  "D-2_hora": {
+    "Ascendant": {
+      "sign": "Pisces",
+      "longitude": 8.664
+    },
+    "Sun": {
+      "sign": "Sagittarius",
+      "longitude": 23.3162
+    },
+    "Moon": {
+      "sign": "Sagittarius",
+      "longitude": 21.0623
+    },
+    "Mars": {
+      "sign": "Virgo",
+      "longitude": 6.7659
+    },
+    "Mercury": {
+      "sign": "Capricorn",
+      "longitude": 9.6134
+    },
+    "Jupiter": {
+      "sign": "Aquarius",
+      "longitude": 18.3496
+    },
+    "Venus": {
+      "sign": "Sagittarius",
+      "longitude": 5.8573
+    },
+    "Saturn": {
+      "sign": "Virgo",
+      "longitude": 24.1586
+    },
+    "Rahu": {
+      "sign": "Aquarius",
+      "longitude": 29.5262
+    },
+    "Ketu": {
+      "sign": "Aquarius",
+      "longitude": 29.5262
+    },
+    "Uranus": {
+      "sign": "Sagittarius",
+      "longitude": 25.534
+    },
+    "Neptune": {
+      "sign": "Libra",
+      "longitude": 13.8266
+    },
+    "Pluto": {
+      "sign": "Leo",
+      "longitude": 0.6516
+    }
+  },
+  "D-3_drekkana": {
+    "Ascendant": {
+      "sign": "Pisces",
+      "longitude": 12.996
+    },
+    "Sun": {
+      "sign": "Gemini",
+      "longitude": 4.9743
+    },
+    "Moon": {
+      "sign": "Sagittarius",
+      "longitude": 1.5934
+    },
+    "Mars": {
+      "sign": "Aries",
+      "longitude": 25.1488
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 29.4202
+    },
+    "Jupiter": {
+      "sign": "Taurus",
+      "longitude": 12.5244
+    },
+    "Venus": {
+      "sign": "Aquarius",
+      "longitude": 8.7859
+    },
+    "Saturn": {
+      "sign": "Aquarius",
+      "longitude": 21.2379
+    },
+    "Rahu": {
+      "sign": "Scorpio",
+      "longitude": 29.2893
+    },
+    "Ketu": {
+      "sign": "Taurus",
+      "longitude": 29.2893
+    },
+    "Uranus": {
+      "sign": "Gemini",
+      "longitude": 8.301
+    },
+    "Neptune": {
+      "sign": "Virgo",
+      "longitude": 5.74
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 0.9774
+    }
+  },
+  "D-4_chaturthamsa": {
+    "Ascendant": {
+      "sign": "Pisces",
+      "longitude": 17.3279
+    },
+    "Sun": {
+      "sign": "Taurus",
+      "longitude": 16.6324
+    },
+    "Moon": {
+      "sign": "Scorpio",
+      "longitude": 12.1245
+    },
+    "Mars": {
+      "sign": "Gemini",
+      "longitude": 13.5317
+    },
+    "Mercury": {
+      "sign": "Leo",
+      "longitude": 19.2269
+    },
+    "Jupiter": {
+      "sign": "Gemini",
+      "longitude": 6.6991
+    },
+    "Venus": {
+      "sign": "Aquarius",
+      "longitude": 11.7146
+    },
+    "Saturn": {
+      "sign": "Pisces",
+      "longitude": 18.3172
+    },
+    "Rahu": {
+      "sign": "Sagittarius",
+      "longitude": 29.0523
+    },
+    "Ketu": {
+      "sign": "Gemini",
+      "longitude": 29.0523
+    },
+    "Uranus": {
+      "sign": "Taurus",
+      "longitude": 21.068
+    },
+    "Neptune": {
+      "sign": "Cancer",
+      "longitude": 27.6533
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 1.3031
+    }
+  },
+  "D-5_panchamsa": {
+    "Ascendant": {
+      "sign": "Taurus",
+      "longitude": 21.6599
+    },
+    "Sun": {
+      "sign": "Aquarius",
+      "longitude": 28.2905
+    },
+    "Moon": {
+      "sign": "Aquarius",
+      "longitude": 22.6557
+    },
+    "Mars": {
+      "sign": "Gemini",
+      "longitude": 1.9147
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 9.0336
+    },
+    "Jupiter": {
+      "sign": "Scorpio",
+      "longitude": 0.8739
+    },
+    "Venus": {
+      "sign": "Aries",
+      "longitude": 14.6432
+    },
+    "Saturn": {
+      "sign": "Libra",
+      "longitude": 15.3965
+    },
+    "Rahu": {
+      "sign": "Scorpio",
+      "longitude": 28.8154
+    },
+    "Ketu": {
+      "sign": "Scorpio",
+      "longitude": 28.8154
+    },
+    "Uranus": {
+      "sign": "Sagittarius",
+      "longitude": 3.835
+    },
+    "Neptune": {
+      "sign": "Capricorn",
+      "longitude": 19.5666
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 1.6289
+    }
+  },
+  "D-6_shashthamsa": {
+    "Ascendant": {
+      "sign": "Libra",
+      "longitude": 25.9919
+    },
+    "Sun": {
+      "sign": "Gemini",
+      "longitude": 9.9485
+    },
+    "Moon": {
+      "sign": "Gemini",
+      "longitude": 3.1868
+    },
+    "Mars": {
+      "sign": "Cancer",
+      "longitude": 20.2976
+    },
+    "Mercury": {
+      "sign": "Cancer",
+      "longitude": 28.8403
+    },
+    "Jupiter": {
+      "sign": "Aquarius",
+      "longitude": 25.0487
+    },
+    "Venus": {
+      "sign": "Aries",
+      "longitude": 17.5719
+    },
+    "Saturn": {
+      "sign": "Virgo",
+      "longitude": 12.4758
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 28.5785
+    },
+    "Ketu": {
+      "sign": "Pisces",
+      "longitude": 28.5785
+    },
+    "Uranus": {
+      "sign": "Gemini",
+      "longitude": 16.602
+    },
+    "Neptune": {
+      "sign": "Aquarius",
+      "longitude": 11.4799
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 1.9547
+    }
+  },
+  "D-7_saptamsa": {
+    "Ascendant": {
+      "sign": "Libra",
+      "longitude": 0.3239
+    },
+    "Sun": {
+      "sign": "Aries",
+      "longitude": 21.6066
+    },
+    "Moon": {
+      "sign": "Libra",
+      "longitude": 13.7179
+    },
+    "Mars": {
+      "sign": "Aries",
+      "longitude": 8.6805
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 18.647
+    },
+    "Jupiter": {
+      "sign": "Leo",
+      "longitude": 19.2235
+    },
+    "Venus": {
+      "sign": "Aquarius",
+      "longitude": 20.5005
+    },
+    "Saturn": {
+      "sign": "Sagittarius",
+      "longitude": 9.5551
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 28.3416
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 28.3416
+    },
+    "Uranus": {
+      "sign": "Aries",
+      "longitude": 29.369
+    },
+    "Neptune": {
+      "sign": "Sagittarius",
+      "longitude": 3.3932
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 2.2805
+    }
+  },
+  "D-8_ashtamsa": {
+    "Ascendant": {
+      "sign": "Virgo",
+      "longitude": 4.6559
+    },
+    "Sun": {
+      "sign": "Pisces",
+      "longitude": 3.2647
+    },
+    "Moon": {
+      "sign": "Aquarius",
+      "longitude": 24.2491
+    },
+    "Mars": {
+      "sign": "Sagittarius",
+      "longitude": 27.0635
+    },
+    "Mercury": {
+      "sign": "Taurus",
+      "longitude": 8.4538
+    },
+    "Jupiter": {
+      "sign": "Aquarius",
+      "longitude": 13.3983
+    },
+    "Venus": {
+      "sign": "Sagittarius",
+      "longitude": 23.4292
+    },
+    "Saturn": {
+      "sign": "Pisces",
+      "longitude": 6.6344
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 28.1047
+    },
+    "Ketu": {
+      "sign": "Pisces",
+      "longitude": 28.1047
+    },
+    "Uranus": {
+      "sign": "Pisces",
+      "longitude": 12.136
+    },
+    "Neptune": {
+      "sign": "Virgo",
+      "longitude": 25.3065
+    },
+    "Pluto": {
+      "sign": "Leo",
+      "longitude": 2.6063
+    }
+  },
+  "D-9_navamsa": {
+    "Ascendant": {
+      "sign": "Leo",
+      "longitude": 8.9879
+    },
+    "Sun": {
+      "sign": "Capricorn",
+      "longitude": 14.9228
+    },
+    "Moon": {
+      "sign": "Cancer",
+      "longitude": 4.7802
+    },
+    "Mars": {
+      "sign": "Virgo",
+      "longitude": 15.4464
+    },
+    "Mercury": {
+      "sign": "Pisces",
+      "longitude": 28.2605
+    },
+    "Jupiter": {
+      "sign": "Leo",
+      "longitude": 7.5731
+    },
+    "Venus": {
+      "sign": "Libra",
+      "longitude": 26.3578
+    },
+    "Saturn": {
+      "sign": "Gemini",
+      "longitude": 3.7137
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 27.8678
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 27.8678
+    },
+    "Uranus": {
+      "sign": "Capricorn",
+      "longitude": 24.903
+    },
+    "Neptune": {
+      "sign": "Cancer",
+      "longitude": 17.2199
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 2.9321
+    }
+  },
+  "D-10_dasamsa": {
+    "Ascendant": {
+      "sign": "Sagittarius",
+      "longitude": 13.3198
+    },
+    "Sun": {
+      "sign": "Taurus",
+      "longitude": 26.5809
+    },
+    "Moon": {
+      "sign": "Scorpio",
+      "longitude": 15.3113
+    },
+    "Mars": {
+      "sign": "Gemini",
+      "longitude": 3.8293
+    },
+    "Mercury": {
+      "sign": "Leo",
+      "longitude": 18.0672
+    },
+    "Jupiter": {
+      "sign": "Capricorn",
+      "longitude": 1.7479
+    },
+    "Venus": {
+      "sign": "Aquarius",
+      "longitude": 29.2865
+    },
+    "Saturn": {
+      "sign": "Pisces",
+      "longitude": 0.793
+    },
+    "Rahu": {
+      "sign": "Leo",
+      "longitude": 27.6309
+    },
+    "Ketu": {
+      "sign": "Aquarius",
+      "longitude": 27.6309
+    },
+    "Uranus": {
+      "sign": "Gemini",
+      "longitude": 7.67
+    },
+    "Neptune": {
+      "sign": "Aries",
+      "longitude": 9.1332
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 3.2578
+    }
+  },
+  "D-11_rudramsa": {
+    "Ascendant": {
+      "sign": "Gemini",
+      "longitude": 17.6518
+    },
+    "Sun": {
+      "sign": "Libra",
+      "longitude": 8.239
+    },
+    "Moon": {
+      "sign": "Pisces",
+      "longitude": 25.8425
+    },
+    "Mars": {
+      "sign": "Aquarius",
+      "longitude": 22.2122
+    },
+    "Mercury": {
+      "sign": "Capricorn",
+      "longitude": 7.8739
+    },
+    "Jupiter": {
+      "sign": "Cancer",
+      "longitude": 25.9226
+    },
+    "Venus": {
+      "sign": "Cancer",
+      "longitude": 2.2151
+    },
+    "Saturn": {
+      "sign": "Scorpio",
+      "longitude": 27.8723
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 27.394
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 27.394
+    },
+    "Uranus": {
+      "sign": "Libra",
+      "longitude": 20.437
+    },
+    "Neptune": {
+      "sign": "Pisces",
+      "longitude": 1.0465
+    },
+    "Pluto": {
+      "sign": "Leo",
+      "longitude": 3.5836
+    }
+  },
+  "D-12_dwadasamsa": {
+    "Ascendant": {
+      "sign": "Aries",
+      "longitude": 21.9838
+    },
+    "Sun": {
+      "sign": "Gemini",
+      "longitude": 19.8971
+    },
+    "Moon": {
+      "sign": "Sagittarius",
+      "longitude": 6.3736
+    },
+    "Mars": {
+      "sign": "Cancer",
+      "longitude": 10.5952
+    },
+    "Mercury": {
+      "sign": "Virgo",
+      "longitude": 27.6806
+    },
+    "Jupiter": {
+      "sign": "Gemini",
+      "longitude": 20.0974
+    },
+    "Venus": {
+      "sign": "Pisces",
+      "longitude": 5.1438
+    },
+    "Saturn": {
+      "sign": "Aries",
+      "longitude": 24.9516
+    },
+    "Rahu": {
+      "sign": "Aquarius",
+      "longitude": 27.157
+    },
+    "Ketu": {
+      "sign": "Leo",
+      "longitude": 27.157
+    },
+    "Uranus": {
+      "sign": "Cancer",
+      "longitude": 3.204
+    },
+    "Neptune": {
+      "sign": "Virgo",
+      "longitude": 22.9598
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 3.9094
+    }
+  },
+  "D-16_shodasamsa": {
+    "Ascendant": {
+      "sign": "Aquarius",
+      "longitude": 9.3118
+    },
+    "Sun": {
+      "sign": "Aquarius",
+      "longitude": 6.5294
+    },
+    "Moon": {
+      "sign": "Capricorn",
+      "longitude": 18.4981
+    },
+    "Mars": {
+      "sign": "Virgo",
+      "longitude": 24.1269
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 16.9075
+    },
+    "Jupiter": {
+      "sign": "Sagittarius",
+      "longitude": 26.7966
+    },
+    "Venus": {
+      "sign": "Virgo",
+      "longitude": 16.8584
+    },
+    "Saturn": {
+      "sign": "Aquarius",
+      "longitude": 13.2688
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 26.2094
+    },
+    "Ketu": {
+      "sign": "Pisces",
+      "longitude": 26.2094
+    },
+    "Uranus": {
+      "sign": "Aquarius",
+      "longitude": 24.272
+    },
+    "Neptune": {
+      "sign": "Pisces",
+      "longitude": 20.6131
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 5.2126
+    }
+  },
+  "D-20_vimsamsa": {
+    "Ascendant": {
+      "sign": "Libra",
+      "longitude": 26.6397
+    },
+    "Sun": {
+      "sign": "Cancer",
+      "longitude": 23.1618
+    },
+    "Moon": {
+      "sign": "Cancer",
+      "longitude": 0.6226
+    },
+    "Mars": {
+      "sign": "Leo",
+      "longitude": 7.6586
+    },
+    "Mercury": {
+      "sign": "Capricorn",
+      "longitude": 6.1344
+    },
+    "Jupiter": {
+      "sign": "Sagittarius",
+      "longitude": 3.4957
+    },
+    "Venus": {
+      "sign": "Capricorn",
+      "longitude": 28.573
+    },
+    "Saturn": {
+      "sign": "Aquarius",
+      "longitude": 1.5859
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 25.2617
+    },
+    "Ketu": {
+      "sign": "Pisces",
+      "longitude": 25.2617
+    },
+    "Uranus": {
+      "sign": "Leo",
+      "longitude": 15.34
+    },
+    "Neptune": {
+      "sign": "Gemini",
+      "longitude": 18.2664
+    },
+    "Pluto": {
+      "sign": "Leo",
+      "longitude": 6.5157
+    }
+  },
+  "D-24_chaturvimsamsa": {
+    "Ascendant": {
+      "sign": "Libra",
+      "longitude": 13.9676
+    },
+    "Sun": {
+      "sign": "Taurus",
+      "longitude": 9.7942
+    },
+    "Moon": {
+      "sign": "Aries",
+      "longitude": 12.7472
+    },
+    "Mars": {
+      "sign": "Libra",
+      "longitude": 21.1904
+    },
+    "Mercury": {
+      "sign": "Scorpio",
+      "longitude": 25.3613
+    },
+    "Jupiter": {
+      "sign": "Aquarius",
+      "longitude": 10.1949
+    },
+    "Venus": {
+      "sign": "Libra",
+      "longitude": 10.2876
+    },
+    "Saturn": {
+      "sign": "Taurus",
+      "longitude": 19.9031
+    },
+    "Rahu": {
+      "sign": "Gemini",
+      "longitude": 24.3141
+    },
+    "Ketu": {
+      "sign": "Gemini",
+      "longitude": 24.3141
+    },
+    "Uranus": {
+      "sign": "Gemini",
+      "longitude": 6.4079
+    },
+    "Neptune": {
+      "sign": "Sagittarius",
+      "longitude": 15.9196
+    },
+    "Pluto": {
+      "sign": "Leo",
+      "longitude": 7.8188
+    }
+  },
+  "D-27_nakshatramsa": {
+    "Ascendant": {
+      "sign": "Aries",
+      "longitude": 26.9636
+    },
+    "Sun": {
+      "sign": "Leo",
+      "longitude": 14.7684
+    },
+    "Moon": {
+      "sign": "Capricorn",
+      "longitude": 14.3406
+    },
+    "Mars": {
+      "sign": "Leo",
+      "longitude": 16.3391
+    },
+    "Mercury": {
+      "sign": "Pisces",
+      "longitude": 24.7814
+    },
+    "Jupiter": {
+      "sign": "Aries",
+      "longitude": 22.7192
+    },
+    "Venus": {
+      "sign": "Sagittarius",
+      "longitude": 19.0735
+    },
+    "Saturn": {
+      "sign": "Libra",
+      "longitude": 11.141
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 23.6034
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 23.6034
+    },
+    "Uranus": {
+      "sign": "Virgo",
+      "longitude": 14.7089
+    },
+    "Neptune": {
+      "sign": "Aquarius",
+      "longitude": 21.6596
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 8.7962
+    }
+  },
+  "D-30_trimsamsa": {
+    "Ascendant": {
+      "sign": "Taurus",
+      "longitude": 9.9595
+    },
+    "Sun": {
+      "sign": "Sagittarius",
+      "longitude": 19.7427
+    },
+    "Moon": {
+      "sign": "Sagittarius",
+      "longitude": 15.934
+    },
+    "Mars": {
+      "sign": "Gemini",
+      "longitude": 11.4879
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 24.2016
+    },
+    "Jupiter": {
+      "sign": "Capricorn",
+      "longitude": 5.2436
+    },
+    "Venus": {
+      "sign": "Aries",
+      "longitude": 27.8595
+    },
+    "Saturn": {
+      "sign": "Libra",
+      "longitude": 2.3789
+    },
+    "Rahu": {
+      "sign": "Scorpio",
+      "longitude": 22.8926
+    },
+    "Ketu": {
+      "sign": "Scorpio",
+      "longitude": 22.8926
+    },
+    "Uranus": {
+      "sign": "Sagittarius",
+      "longitude": 23.0099
+    },
+    "Neptune": {
+      "sign": "Capricorn",
+      "longitude": 27.3995
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 9.7735
+    }
+  },
+  "D-40_khavedamsa": {
+    "Ascendant": {
+      "sign": "Pisces",
+      "longitude": 23.2794
+    },
+    "Sun": {
+      "sign": "Cancer",
+      "longitude": 16.3236
+    },
+    "Moon": {
+      "sign": "Gemini",
+      "longitude": 1.2453
+    },
+    "Mars": {
+      "sign": "Aries",
+      "longitude": 15.3173
+    },
+    "Mercury": {
+      "sign": "Gemini",
+      "longitude": 12.2688
+    },
+    "Jupiter": {
+      "sign": "Gemini",
+      "longitude": 6.9914
+    },
+    "Venus": {
+      "sign": "Cancer",
+      "longitude": 27.146
+    },
+    "Saturn": {
+      "sign": "Aries",
+      "longitude": 3.1719
+    },
+    "Rahu": {
+      "sign": "Capricorn",
+      "longitude": 20.5235
+    },
+    "Ketu": {
+      "sign": "Capricorn",
+      "longitude": 20.5235
+    },
+    "Uranus": {
+      "sign": "Virgo",
+      "longitude": 0.6799
+    },
+    "Neptune": {
+      "sign": "Pisces",
+      "longitude": 6.5327
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 13.0314
+    }
+  },
+  "D-45_akshavedamsa": {
+    "Ascendant": {
+      "sign": "Gemini",
+      "longitude": 14.9393
+    },
+    "Sun": {
+      "sign": "Capricorn",
+      "longitude": 14.6141
+    },
+    "Moon": {
+      "sign": "Scorpio",
+      "longitude": 23.901
+    },
+    "Mars": {
+      "sign": "Pisces",
+      "longitude": 17.2319
+    },
+    "Mercury": {
+      "sign": "Capricorn",
+      "longitude": 21.3024
+    },
+    "Jupiter": {
+      "sign": "Sagittarius",
+      "longitude": 7.8654
+    },
+    "Venus": {
+      "sign": "Sagittarius",
+      "longitude": 11.7892
+    },
+    "Saturn": {
+      "sign": "Aries",
+      "longitude": 18.5684
+    },
+    "Rahu": {
+      "sign": "Leo",
+      "longitude": 19.3389
+    },
+    "Ketu": {
+      "sign": "Leo",
+      "longitude": 19.3389
+    },
+    "Uranus": {
+      "sign": "Pisces",
+      "longitude": 4.5149
+    },
+    "Neptune": {
+      "sign": "Sagittarius",
+      "longitude": 26.0993
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 14.6603
+    }
+  },
+  "D-60_shastiamsa": {
+    "Ascendant": {
+      "sign": "Scorpio",
+      "longitude": 19.9191
+    },
+    "Sun": {
+      "sign": "Capricorn",
+      "longitude": 9.4854
+    },
+    "Moon": {
+      "sign": "Taurus",
+      "longitude": 1.8679
+    },
+    "Mars": {
+      "sign": "Sagittarius",
+      "longitude": 22.9759
+    },
+    "Mercury": {
+      "sign": "Taurus",
+      "longitude": 18.4032
+    },
+    "Jupiter": {
+      "sign": "Virgo",
+      "longitude": 10.4872
+    },
+    "Venus": {
+      "sign": "Cancer",
+      "longitude": 25.7189
+    },
+    "Saturn": {
+      "sign": "Sagittarius",
+      "longitude": 4.7578
+    },
+    "Rahu": {
+      "sign": "Aquarius",
+      "longitude": 15.7852
+    },
+    "Ketu": {
+      "sign": "Leo",
+      "longitude": 15.7852
+    },
+    "Uranus": {
+      "sign": "Pisces",
+      "longitude": 16.0199
+    },
+    "Neptune": {
+      "sign": "Leo",
+      "longitude": 24.7991
+    },
+    "Pluto": {
+      "sign": "Sagittarius",
+      "longitude": 19.5471
+    }
+  },
+  "D-81_nava_navamsa": {
+    "Ascendant": {
+      "sign": "Gemini",
+      "longitude": 20.8908
+    },
+    "Sun": {
+      "sign": "Taurus",
+      "longitude": 14.3053
+    },
+    "Moon": {
+      "sign": "Leo",
+      "longitude": 13.0217
+    },
+    "Mars": {
+      "sign": "Taurus",
+      "longitude": 19.0174
+    },
+    "Mercury": {
+      "sign": "Pisces",
+      "longitude": 14.3443
+    },
+    "Jupiter": {
+      "sign": "Gemini",
+      "longitude": 8.1577
+    },
+    "Venus": {
+      "sign": "Taurus",
+      "longitude": 27.2206
+    },
+    "Saturn": {
+      "sign": "Scorpio",
+      "longitude": 3.4231
+    },
+    "Rahu": {
+      "sign": "Pisces",
+      "longitude": 10.8101
+    },
+    "Ketu": {
+      "sign": "Virgo",
+      "longitude": 10.8101
+    },
+    "Uranus": {
+      "sign": "Leo",
+      "longitude": 14.1268
+    },
+    "Neptune": {
+      "sign": "Sagittarius",
+      "longitude": 4.9788
+    },
+    "Pluto": {
+      "sign": "Aries",
+      "longitude": 26.3886
+    }
+  },
+  "D-108_ashtottaramsa": {
+    "Ascendant": {
+      "sign": "Scorpio",
+      "longitude": 17.8544
+    },
+    "Sun": {
+      "sign": "Gemini",
+      "longitude": 29.0738
+    },
+    "Moon": {
+      "sign": "Leo",
+      "longitude": 27.3623
+    },
+    "Mars": {
+      "sign": "Pisces",
+      "longitude": 5.3566
+    },
+    "Mercury": {
+      "sign": "Aquarius",
+      "longitude": 9.1257
+    },
+    "Jupiter": {
+      "sign": "Scorpio",
+      "longitude": 0.8769
+    },
+    "Venus": {
+      "sign": "Leo",
+      "longitude": 16.2941
+    },
+    "Saturn": {
+      "sign": "Cancer",
+      "longitude": 14.5641
+    },
+    "Rahu": {
+      "sign": "Aquarius",
+      "longitude": 4.4134
+    },
+    "Ketu": {
+      "sign": "Leo",
+      "longitude": 4.4134
+    },
+    "Uranus": {
+      "sign": "Libra",
+      "longitude": 28.8358
+    },
+    "Neptune": {
+      "sign": "Capricorn",
+      "longitude": 26.6383
+    },
+    "Pluto": {
+      "sign": "Taurus",
+      "longitude": 5.1848
+    }
+  },
+  "D-144_dwadas_dwadasamsa": {
+    "Ascendant": {
+      "sign": "Sagittarius",
+      "longitude": 23.8058
+    },
+    "Sun": {
+      "sign": "Capricorn",
+      "longitude": 28.765
+    },
+    "Moon": {
+      "sign": "Aquarius",
+      "longitude": 16.4831
+    },
+    "Mars": {
+      "sign": "Scorpio",
+      "longitude": 7.1421
+    },
+    "Mercury": {
+      "sign": "Leo",
+      "longitude": 2.1676
+    },
+    "Jupiter": {
+      "sign": "Aquarius",
+      "longitude": 1.1692
+    },
+    "Venus": {
+      "sign": "Taurus",
+      "longitude": 1.7255
+    },
+    "Saturn": {
+      "sign": "Capricorn",
+      "longitude": 29.4188
+    },
+    "Rahu": {
+      "sign": "Sagittarius",
+      "longitude": 25.8846
+    },
+    "Ketu": {
+      "sign": "Gemini",
+      "longitude": 25.8846
+    },
+    "Uranus": {
+      "sign": "Leo",
+      "longitude": 8.4477
+    },
+    "Neptune": {
+      "sign": "Gemini",
+      "longitude": 5.5178
+    },
+    "Pluto": {
+      "sign": "Capricorn",
+      "longitude": 16.913
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { calculateBirthData } from '../utils/astrology';
 import { PRESET_CITIES } from '../utils/cities';
 import { Heart, Award, Star, Users, Sparkles, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
@@ -253,22 +253,96 @@ function getMarriagePeriods(birthData, lagnaRasiIdx) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function CompatibilityView() {
-  const [partnerA, setPartnerA] = useState({
-    name: 'Groom',
-    dateStr: '1995-05-15', timeStr: '08:30:00',
-    lat: 28.6139, lon: 77.2090, timezoneOffset: 5.5,
-    cityPreset: 'New Delhi, India'
-  });
-  const [partnerB, setPartnerB] = useState({
-    name: 'Bride',
-    dateStr: '1997-08-20', timeStr: '14:15:00',
-    lat: 19.0760, lon: 72.8777, timezoneOffset: 5.5,
-    cityPreset: 'Mumbai, India'
-  });
+
+function makeEmpty(label) {
+  return {
+    name: label,
+    dateStr: '',
+    timeHour: '',
+    timeMinute: '',
+    timeSecond: '00',
+    timeAmpm: 'AM',
+    lat: '',
+    lon: '',
+    timezoneOffset: '',
+    cityPreset: ''
+  };
+}
+
+function paramsToPartner(params, label) {
+  if (!params) return makeEmpty(label);
+  let hour = '', minute = '', second = '00', ampm = 'AM';
+  if (params.timeStr) {
+    const parts = params.timeStr.split(':');
+    let hr24 = parseInt(parts[0]) || 0;
+    minute = parseInt(parts[1]) || 0;
+    second = parseInt(parts[2]) || 0;
+    if (hr24 >= 12) {
+      ampm = 'PM';
+      if (hr24 > 12) hr24 -= 12;
+    } else {
+      ampm = 'AM';
+      if (hr24 === 0) hr24 = 12;
+    }
+    hour = hr24;
+  }
+  return {
+    name: params.name || label,
+    dateStr: params.dateStr || '',
+    timeHour: hour,
+    timeMinute: minute,
+    timeSecond: second,
+    timeAmpm: ampm,
+    lat: params.lat ?? '',
+    lon: params.lon ?? '',
+    timezoneOffset: params.timezoneOffset ?? '',
+    cityPreset: params.cityPreset || ''
+  };
+}
+
+function partnerToCalcParams(partner) {
+  let hr = parseInt(partner.timeHour) || 0;
+  const min = String(partner.timeMinute).padStart(2, '0');
+  const sec = String(partner.timeSecond).padStart(2, '0');
+  if (partner.timeAmpm === 'PM' && hr < 12) hr += 12;
+  if (partner.timeAmpm === 'AM' && hr === 12) hr = 0;
+  const timeStr = `${String(hr).padStart(2, '0')}:${min}:${sec}`;
+  return {
+    name: partner.name,
+    dateStr: partner.dateStr,
+    timeStr,
+    lat: parseFloat(partner.lat) || 0,
+    lon: parseFloat(partner.lon) || 0,
+    timezoneOffset: parseFloat(partner.timezoneOffset) || 0
+  };
+}
+
+export default function CompatibilityView({ prefillParams }) {
+  // Determine which slot to prefill based on gender
+  const gender = prefillParams?.gender || 'other';
+  const isGroom = gender === 'male';
+  const isBride = gender === 'female';
+
+  const [partnerA, setPartnerA] = useState(() =>
+    isGroom ? paramsToPartner(prefillParams, 'Groom') : makeEmpty('Groom')
+  );
+  const [partnerB, setPartnerB] = useState(() =>
+    isBride ? paramsToPartner(prefillParams, 'Bride') : makeEmpty('Bride')
+  );
   const [result, setResult] = useState(null);
   const [calcError, setCalcError] = useState(null);
   const [activeTab, setActiveTab] = useState('ashtakoota');
+
+  // Update the relevant partner if prefillParams changes (e.g. user recalculates birth chart)
+  useEffect(() => {
+    if (!prefillParams) return;
+    const g = prefillParams.gender || 'other';
+    if (g === 'male') {
+      setPartnerA(paramsToPartner(prefillParams, 'Groom'));
+    } else if (g === 'female') {
+      setPartnerB(paramsToPartner(prefillParams, 'Bride'));
+    }
+  }, [prefillParams]);
 
   const handleCity = (who, e) => {
     const setter = who === 'A' ? setPartnerA : setPartnerB;
@@ -280,15 +354,27 @@ export default function CompatibilityView() {
   const handleChange = (who, e) => {
     const { name, value } = e.target;
     const setter = who === 'A' ? setPartnerA : setPartnerB;
-    setter(p => ({ ...p, [name]: ['lat','lon','timezoneOffset'].includes(name) ? parseFloat(value)||0 : value }));
+    setter(p => ({ ...p, [name]: ['lat','lon','timezoneOffset'].includes(name) ? (value === '' ? '' : parseFloat(value) || 0) : value }));
   };
 
   const handleCalculate = (e) => {
     e.preventDefault();
     try {
       setCalcError(null);
-      const dataA = calculateBirthData(partnerA);
-      const dataB = calculateBirthData(partnerB);
+      const cpA = partnerToCalcParams(partnerA);
+      const cpB = partnerToCalcParams(partnerB);
+
+      if (!cpA.dateStr || !partnerA.timeHour || partnerA.lat === '' || partnerA.lon === '' || partnerA.timezoneOffset === '') {
+        setCalcError('Please fill all Groom fields (date, time, coordinates).');
+        return;
+      }
+      if (!cpB.dateStr || !partnerB.timeHour || partnerB.lat === '' || partnerB.lon === '' || partnerB.timezoneOffset === '') {
+        setCalcError('Please fill all Bride fields (date, time, coordinates).');
+        return;
+      }
+
+      const dataA = calculateBirthData(cpA);
+      const dataB = calculateBirthData(cpB);
       const groomMoon = dataA.planets['Moon'].siderealLong;
       const brideMoon = dataB.planets['Moon'].siderealLong;
       const milan = calculateAshtakoota(groomMoon, brideMoon);
@@ -296,8 +382,8 @@ export default function CompatibilityView() {
       const brideLagna = dataB.planets['Lagna'].rasi.index;
 
       setResult({
-        nameA: partnerA.name,
-        nameB: partnerB.name,
+        nameA: cpA.name,
+        nameB: cpB.name,
         moonA: dataA.planets['Moon'],
         moonB: dataB.planets['Moon'],
         lagnaA: dataA.planets['Lagna'],
@@ -332,6 +418,87 @@ export default function CompatibilityView() {
     nadi:    { name: 'Nadi', fullName: 'Nadi (Health & Genetics)', max: 8, desc: 'Physiological and DNA compatibility — progeny health', icon: '🧬' }
   };
 
+  const renderPartnerForm = (who, partner) => {
+    const label = who === 'A' ? 'Groom' : 'Bride';
+    const color = who === 'A' ? 'var(--cyan)' : 'var(--gold)';
+    const isPrefilled = (who === 'A' && isGroom) || (who === 'B' && isBride);
+
+    return (
+      <div key={who} className="partner-panel">
+        <div
+          className={`partner-header-${who === 'A' ? 'a' : 'b'}`}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'space-between' }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Users style={{ width: 15, height: 15 }} />
+            {partner.name || label}
+          </span>
+          {isPrefilled && (
+            <span style={{
+              fontSize: '9px', padding: '2px 7px', borderRadius: '4px',
+              background: 'rgba(52,211,153,0.15)', color: '#34d399', fontWeight: 700
+            }}>AUTO-FILLED ✓</span>
+          )}
+        </div>
+        <div className="partner-mini-grid">
+          {/* Name */}
+          <div className="full-col">
+            <div className="mini-label">Name</div>
+            <input name="name" value={partner.name} onChange={e => handleChange(who, e)} className="mini-input" placeholder={label} />
+          </div>
+
+          {/* Date */}
+          <div>
+            <div className="mini-label">Date of Birth</div>
+            <input type="date" name="dateStr" value={partner.dateStr} onChange={e => handleChange(who, e)} className="mini-input" />
+          </div>
+
+          {/* Time with AM/PM */}
+          <div>
+            <div className="mini-label">Time of Birth</div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <select name="timeHour" value={partner.timeHour} onChange={e => handleChange(who, e)} className="mini-input" style={{ flex: 1, paddingRight: '2px' }}>
+                <option value="">HH</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                  <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+                ))}
+              </select>
+              <select name="timeMinute" value={partner.timeMinute} onChange={e => handleChange(who, e)} className="mini-input" style={{ flex: 1, paddingRight: '2px' }}>
+                <option value="">MM</option>
+                {Array.from({ length: 60 }, (_, i) => i).map(m => (
+                  <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+                ))}
+              </select>
+              <select name="timeAmpm" value={partner.timeAmpm} onChange={e => handleChange(who, e)} className="mini-input" style={{ width: '52px' }}>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+
+          {/* City */}
+          <div className="full-col">
+            <div className="mini-label">City Preset</div>
+            <select value={partner.cityPreset} onChange={e => handleCity(who, e)} className="mini-input" style={{ cursor: 'pointer', colorScheme: 'dark' }}>
+              <option value="">-- Manual Entry --</option>
+              {PRESET_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {/* Lat & Timezone */}
+          <div>
+            <div className="mini-label">Latitude</div>
+            <input type="number" step="0.0001" name="lat" value={partner.lat} onChange={e => handleChange(who, e)} className="mini-input" placeholder="e.g. 28.61" />
+          </div>
+          <div>
+            <div className="mini-label">Timezone (hrs)</div>
+            <input type="number" step="0.5" name="timezoneOffset" value={partner.timezoneOffset} onChange={e => handleChange(who, e)} className="mini-input" placeholder="e.g. 5.5" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="card compat-card">
       <div className="card-header">
@@ -342,45 +509,23 @@ export default function CompatibilityView() {
         <span className="subtitle">Complete 36-Point JHora Marriage Compatibility Engine</span>
       </div>
 
+      {(isGroom || isBride) && (
+        <div style={{
+          margin: '0 0 12px 0', padding: '10px 14px',
+          background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.2)',
+          borderRadius: '10px', fontSize: '12px', color: '#34d399',
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          <CheckCircle2 size={14} />
+          Birth details auto-filled from your Kundli for the <strong>{isGroom ? 'Groom' : 'Bride'}</strong> panel. Fill the other partner's details to calculate.
+        </div>
+      )}
+
       {/* Form */}
       <form onSubmit={handleCalculate}>
         <div className="compat-form-grid">
-          {[['A', partnerA, 'Groom'], ['B', partnerB, 'Bride']].map(([who, partner, label]) => (
-            <div key={who} className="partner-panel">
-              <div className={`partner-header-${who === 'A' ? 'a' : 'b'}`} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-                <Users style={{ width:15, height:15 }} /> {partner.name || label}
-              </div>
-              <div className="partner-mini-grid">
-                <div className="full-col">
-                  <div className="mini-label">Name</div>
-                  <input name="name" value={partner.name} onChange={e => handleChange(who, e)} className="mini-input" placeholder={label} />
-                </div>
-                <div>
-                  <div className="mini-label">Date of Birth</div>
-                  <input type="date" name="dateStr" value={partner.dateStr} onChange={e => handleChange(who, e)} className="mini-input" />
-                </div>
-                <div>
-                  <div className="mini-label">Time of Birth</div>
-                  <input type="time" step="1" name="timeStr" value={partner.timeStr} onChange={e => handleChange(who, e)} className="mini-input" />
-                </div>
-                <div className="full-col">
-                  <div className="mini-label">City Preset</div>
-                  <select value={partner.cityPreset} onChange={e => handleCity(who, e)} className="mini-input" style={{ cursor:'pointer', colorScheme:'dark' }}>
-                    <option value="">-- Manual Entry --</option>
-                    {PRESET_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <div className="mini-label">Latitude</div>
-                  <input type="number" step="0.0001" name="lat" value={partner.lat} onChange={e => handleChange(who, e)} className="mini-input" />
-                </div>
-                <div>
-                  <div className="mini-label">Timezone (hrs)</div>
-                  <input type="number" step="0.5" name="timezoneOffset" value={partner.timezoneOffset} onChange={e => handleChange(who, e)} className="mini-input" />
-                </div>
-              </div>
-            </div>
-          ))}
+          {renderPartnerForm('A', partnerA)}
+          {renderPartnerForm('B', partnerB)}
 
           <div className="compat-submit-row">
             <button type="submit" className="btn-compat">

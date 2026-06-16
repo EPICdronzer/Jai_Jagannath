@@ -855,7 +855,7 @@ export function getVargaChartDataFromAPI(divisionalCharts, vargaNum, planetsData
     if (signIdx !== -1) {
       const isRetro = planetsData[name === 'Ascendant' ? 'Lagna' : name]?.isRetrograde || false;
       chart[signIdx].push({
-        name: name === 'Ascendant' ? 'Asc' : name.substring(0, 2),
+        name: name === 'Ascendant' ? 'Lagna' : name,
         isLagna: name === 'Ascendant',
         isRetrograde: isRetro
       });

@@ -1883,3 +1883,27 @@ body {
     justify-content: flex-end;
   }
 }
+
+/* Scroll Arrows for tab bar navigation */
+.nav-scroll-btn {
+  background: rgba(10, 12, 22, 0.95);
+  border: 1px solid var(--border-medium);
+  color: var(--gold);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  flex-shrink: 0;
+  outline: none;
+}
+.nav-scroll-btn:hover {
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 12px var(--gold-glow);
+}

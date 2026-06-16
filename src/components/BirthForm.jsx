@@ -1,122 +1,602 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PRESET_CITIES } from '../utils/cities';
-import { Calendar, Clock, MapPin, Globe, Compass, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, MapPin, Globe, Compass, RefreshCw, Search, Check, X, Map } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function BirthForm({ onSubmit, defaultValues }) {
-  const [formData, setFormData] = useState(defaultValues || {
-    name: '',
-    dateStr: '2026-06-15',
-    timeStr: '17:30:00',
-    lat: 19.8135,
-    lon: 85.8312,
-    timezoneOffset: 5.5,
-    cityPreset: 'Puri, Odisha, India (Jagannath Temple)'
+export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
+  const t = (key) => translations[lang]?.[key] || key;
+
+  const [formData, setFormData] = useState({
+    name: defaultValues?.name || '',
+    gender: defaultValues?.gender || '',
+    dateStr: defaultValues?.dateStr || '',
+    timeHour: '',
+    timeMinute: '',
+    timeSecond: '00',
+    timeAmpm: 'AM',
+    lat: defaultValues?.lat ?? '',
+    lon: defaultValues?.lon ?? '',
+    timezoneOffset: defaultValues?.timezoneOffset ?? '',
+    cityPreset: defaultValues?.cityPreset || ''
   });
 
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mapError, setMapError] = useState('');
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const tempCoords = useRef({ lat: 20.5937, lon: 78.9629, name: '' });
+
+  // Sync state when defaultValues changes
+  useEffect(() => {
+    if (defaultValues) {
+      let hour = '';
+      let minute = '';
+      let second = '00';
+      let ampm = 'AM';
+      
+      if (defaultValues.timeStr) {
+        const parts = defaultValues.timeStr.split(':');
+        let hr24 = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+        second = parseInt(parts[2]) || 0;
+        
+        if (hr24 >= 12) {
+          ampm = 'PM';
+          if (hr24 > 12) hr24 -= 12;
+        } else {
+          ampm = 'AM';
+          if (hr24 === 0) hr24 = 12;
+        }
+        hour = hr24;
+      }
+
+      setFormData({
+        name: defaultValues.name || '',
+        gender: defaultValues.gender || '',
+        dateStr: defaultValues.dateStr || '',
+        timeHour: hour,
+        timeMinute: minute,
+        timeSecond: second,
+        timeAmpm: ampm,
+        lat: defaultValues.lat ?? '',
+        lon: defaultValues.lon ?? '',
+        timezoneOffset: defaultValues.timezoneOffset ?? '',
+        cityPreset: defaultValues.cityPreset || ''
+      });
+    }
+  }, [defaultValues]);
+
+  // Handle preset city change
   const handleCityChange = (e) => {
     const cityName = e.target.value;
-    if (!cityName) { setFormData(p => ({ ...p, cityPreset: '' })); return; }
+    if (!cityName) {
+      setFormData(p => ({ ...p, cityPreset: '', lat: '', lon: '', timezoneOffset: '' }));
+      return;
+    }
     const city = PRESET_CITIES.find(c => c.name === cityName);
-    if (city) setFormData(p => ({ ...p, cityPreset: cityName, lat: city.lat, lon: city.lon, timezoneOffset: city.timezone }));
+    if (city) {
+      setFormData(p => ({
+        ...p,
+        cityPreset: cityName,
+        lat: city.lat,
+        lon: city.lon,
+        timezoneOffset: city.timezone
+      }));
+    }
   };
 
+  // Generic change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(p => ({
       ...p,
-      [name]: ['lat', 'lon', 'timezoneOffset'].includes(name) ? parseFloat(value) || 0 : value
+      [name]: ['lat', 'lon', 'timezoneOffset'].includes(name) ? (value === '' ? '' : parseFloat(value) || 0) : value
     }));
   };
 
-  const handleSubmit = (e) => { e.preventDefault(); onSubmit(formData); };
+  // Open Leaflet Map Modal
+  const openMap = () => {
+    setShowMapModal(true);
+    setMapError('');
+    const curLat = parseFloat(formData.lat) || 20.5937;
+    const curLon = parseFloat(formData.lon) || 78.9629;
+    tempCoords.current = { lat: curLat, lon: curLon, name: formData.cityPreset || '' };
+  };
+
+  // Initialize Map
+  useEffect(() => {
+    if (!showMapModal) return;
+
+    const initTimer = setTimeout(() => {
+      if (!window.L) {
+        setMapError('Leaflet map library could not be loaded. Please check your internet connection.');
+        return;
+      }
+
+      try {
+        const { lat, lon } = tempCoords.current;
+        const map = window.L.map('leaflet-picker-container').setView([lat, lon], 5);
+        mapRef.current = map;
+
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        const marker = window.L.marker([lat, lon], { draggable: true }).addTo(map);
+        markerRef.current = marker;
+
+        const updateMarkerPos = (newLat, newLng, address = '') => {
+          marker.setLatLng([newLat, newLng]);
+          map.panTo([newLat, newLng]);
+          tempCoords.current = {
+            lat: parseFloat(newLat.toFixed(4)),
+            lon: parseFloat(newLng.toFixed(4)),
+            name: address
+          };
+        };
+
+        map.on('click', (e) => {
+          updateMarkerPos(e.latlng.lat, e.latlng.lng);
+        });
+
+        marker.on('dragend', (e) => {
+          const pos = marker.getLatLng();
+          updateMarkerPos(pos.lat, pos.lng);
+        });
+      } catch (err) {
+        console.error(err);
+        setMapError('Failed to initialize map.');
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(initTimer);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [showMapModal]);
+
+  // Search address using Nominatim
+  const handleMapSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const results = await response.json();
+      if (results && results.length > 0) {
+        const first = results[0];
+        const lat = parseFloat(first.lat);
+        const lon = parseFloat(first.lon);
+        const displayName = first.display_name.split(',')[0] + ', ' + (first.display_name.split(',')[1] || '').trim();
+
+        if (mapRef.current && markerRef.current) {
+          mapRef.current.setView([lat, lon], 12);
+          markerRef.current.setLatLng([lat, lon]);
+          tempCoords.current = {
+            lat: parseFloat(lat.toFixed(4)),
+            lon: parseFloat(lon.toFixed(4)),
+            name: displayName
+          };
+        }
+      } else {
+        alert('Place not found. Try a different query.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Geocoding service error.');
+    }
+  };
+
+  // Confirm selected coordinates
+  const handleConfirmLocation = () => {
+    const { lat, lon, name } = tempCoords.current;
+    
+    // Smart Timezone Approximation based on Longitude
+    // 15 degrees = 1 hour. Round to nearest 0.5 hours.
+    const calculatedOffset = Math.round((lon / 15) * 2) / 2;
+
+    setFormData(p => ({
+      ...p,
+      lat,
+      lon,
+      cityPreset: name || `${lat.toFixed(2)}N, ${lon.toFixed(2)}E`,
+      timezoneOffset: calculatedOffset
+    }));
+    setShowMapModal(false);
+  };
+
+  // Submit and combine parts into unified structure
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.dateStr || !formData.timeHour || !formData.timeMinute || formData.lat === '' || formData.lon === '' || formData.timezoneOffset === '') {
+      alert('Please fill out all fields before calculating.');
+      return;
+    }
+
+    // Convert AM/PM time to 24 hour string format (HH:MM:SS)
+    let hr = parseInt(formData.timeHour);
+    const min = String(formData.timeMinute).padStart(2, '0');
+    const sec = String(formData.timeSecond).padStart(2, '0');
+
+    if (formData.timeAmpm === 'PM' && hr < 12) hr += 12;
+    if (formData.timeAmpm === 'AM' && hr === 12) hr = 0;
+
+    const timeStr24 = `${String(hr).padStart(2, '0')}:${min}:${sec}`;
+
+    onSubmit({
+      name: formData.name || 'Subject',
+      gender: formData.gender || 'other',
+      dateStr: formData.dateStr,
+      timeStr: timeStr24,
+      lat: parseFloat(formData.lat),
+      lon: parseFloat(formData.lon),
+      timezoneOffset: parseFloat(formData.timezoneOffset),
+      cityPreset: formData.cityPreset
+    });
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="card birth-form">
-      <div className="card-header">
-        <h2 className="card-title text-gold" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-          <Globe style={{ width:18, height:18, animation:'pulse 2s infinite' }} />
-          Birth Details (Kundli)
-        </h2>
-        <span className="subtitle">Jagannatha Hora</span>
-      </div>
-
-      <div className="card-body">
-        {/* Name */}
-        <div className="form-group">
-          <label className="form-label">Name / Subject</label>
-          <input
-            type="text" name="name" value={formData.name}
-            onChange={handleChange} placeholder="Enter name"
-            className="form-input"
-          />
+    <div className="birth-form-wrapper">
+      <form onSubmit={handleSubmit} className="card birth-form">
+        <div className="card-header">
+          <h2 className="card-title text-gold" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Globe style={{ width: 18, height: 18, animation: 'pulse 2s infinite' }} />
+            {t('birth_details')}
+          </h2>
+          <span className="subtitle">Jagannatha Hora</span>
         </div>
 
-        {/* Date & Time row */}
-        <div className="form-row">
-          <div className="form-group" style={{ flex:1 }}>
-            <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <Calendar style={{ width:13, height:13, color:'var(--gold)' }} /> Date of Birth
-            </label>
-            <input type="date" name="dateStr" value={formData.dateStr} onChange={handleChange} required className="form-input" />
+        <div className="card-body">
+          {/* Name */}
+          <div className="form-group">
+            <label className="form-label">{t('subject_name')}</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder={t('enter_name')}
+              className="form-input"
+            />
           </div>
-          <div className="form-group" style={{ flex:1 }}>
-            <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <Clock style={{ width:13, height:13, color:'var(--gold)' }} /> Time of Birth
+
+          {/* Gender */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontSize: '13px' }}>⚧</span> {t('gender') || 'Gender'}
             </label>
-            <input type="time" name="timeStr" step="1" value={formData.timeStr} onChange={handleChange} required className="form-input" />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[['male','♂ Male'],['female','♀ Female'],['other','⊕ Other']].map(([val, lbl]) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setFormData(p => ({ ...p, gender: val }))}
+                  style={{
+                    flex: 1,
+                    padding: '8px 4px',
+                    borderRadius: '8px',
+                    border: formData.gender === val ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)',
+                    background: formData.gender === val ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: formData.gender === val ? 'var(--gold)' : 'var(--text-secondary)',
+                    fontWeight: formData.gender === val ? 700 : 400,
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* City Preset */}
-        <div className="form-group">
-          <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-            <MapPin style={{ width:13, height:13, color:'var(--gold)' }} /> City Preset
-          </label>
-          <select value={formData.cityPreset} onChange={handleCityChange} className="form-input" style={{ cursor:'pointer', colorScheme:'dark' }}>
-            <option value="">-- Manual Entry --</option>
-            {PRESET_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-          </select>
-        </div>
-
-        {/* Coordinates panel */}
-        <div className="form-row" style={{ background:'rgba(4,5,10,0.6)', padding:'12px', borderRadius:'8px', border:'1px solid rgba(100,116,139,0.15)' }}>
-          <div className="form-group" style={{ flex:1 }}>
-            <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <Compass style={{ width:13, height:13, color:'var(--gold)' }} /> Latitude
+          {/* Date of Birth */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Calendar style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('date_of_birth')}
             </label>
-            <input type="number" name="lat" step="0.0001" value={formData.lat} onChange={handleChange} className="form-input" />
+            <input
+              type="date"
+              name="dateStr"
+              value={formData.dateStr}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
+          </div>
+
+          {/* Time of Birth AM/PM Split Fields */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Clock style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('time_of_birth')}
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {/* Hours */}
+              <select
+                name="timeHour"
+                value={formData.timeHour}
+                onChange={handleChange}
+                required
+                className="form-input"
+                style={{ flex: 1, paddingRight: '4px' }}
+              >
+                <option value="">HH</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                  <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+                ))}
+              </select>
+
+              {/* Minutes */}
+              <select
+                name="timeMinute"
+                value={formData.timeMinute}
+                onChange={handleChange}
+                required
+                className="form-input"
+                style={{ flex: 1, paddingRight: '4px' }}
+              >
+                <option value="">MM</option>
+                {Array.from({ length: 60 }, (_, i) => i).map(m => (
+                  <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+                ))}
+              </select>
+
+              {/* Seconds */}
+              <select
+                name="timeSecond"
+                value={formData.timeSecond}
+                onChange={handleChange}
+                required
+                className="form-input"
+                style={{ flex: 1, paddingRight: '4px' }}
+              >
+                {Array.from({ length: 60 }, (_, i) => i).map(s => (
+                  <option key={s} value={s}>{String(s).padStart(2, '0')}</option>
+                ))}
+              </select>
+
+              {/* AM/PM */}
+              <select
+                name="timeAmpm"
+                value={formData.timeAmpm}
+                onChange={handleChange}
+                className="form-input"
+                style={{ width: '70px' }}
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+
+          {/* City Preset */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <MapPin style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('city_preset')}
+            </label>
+            <select
+              value={formData.cityPreset}
+              onChange={handleCityChange}
+              className="form-input"
+              style={{ cursor: 'pointer', colorScheme: 'dark' }}
+            >
+              <option value="">{t('manual_entry')}</option>
+              {PRESET_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {/* Map Location Picker Button */}
+          <button
+            type="button"
+            onClick={openMap}
+            className="btn btn-secondary"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              padding: '10px',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              marginBottom: '16px'
+            }}
+          >
+            <Map size={15} style={{ color: 'var(--gold)' }} />
+            {t('choose_map')}
+          </button>
+
+          {/* Coordinates panel */}
+          <div className="form-row" style={{ background: 'rgba(4,5,10,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.15)' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Compass style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('latitude')}
+              </label>
+              <input
+                type="number"
+                name="lat"
+                step="0.0001"
+                value={formData.lat}
+                onChange={handleChange}
+                className="form-input"
+                required
+              />
+              <span className="input-helper">
+                {formData.lat !== '' && (parseFloat(formData.lat) >= 0 ? `${parseFloat(formData.lat).toFixed(2)}° N` : `${Math.abs(parseFloat(formData.lat)).toFixed(2)}° S`)}
+              </span>
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Compass style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('longitude')}
+              </label>
+              <input
+                type="number"
+                name="lon"
+                step="0.0001"
+                value={formData.lon}
+                onChange={handleChange}
+                className="form-input"
+                required
+              />
+              <span className="input-helper">
+                {formData.lon !== '' && (parseFloat(formData.lon) >= 0 ? `${parseFloat(formData.lon).toFixed(2)}° E` : `${Math.abs(parseFloat(formData.lon)).toFixed(2)}° W`)}
+              </span>
+            </div>
+          </div>
+
+          {/* Timezone */}
+          <div className="form-group" style={{ marginTop: '12px' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Globe style={{ width: 13, height: 13, color: 'var(--gold)' }} /> {t('timezone')}
+            </label>
+            <input
+              type="number"
+              name="timezoneOffset"
+              step="0.5"
+              value={formData.timezoneOffset}
+              onChange={handleChange}
+              className="form-input"
+              required
+            />
             <span className="input-helper">
-              {formData.lat >= 0 ? `${formData.lat.toFixed(2)}° N` : `${Math.abs(formData.lat).toFixed(2)}° S`}
+              {formData.timezoneOffset !== '' && (parseFloat(formData.timezoneOffset) >= 0 ? `UTC +${formData.timezoneOffset}` : `UTC ${formData.timezoneOffset}`)}
             </span>
           </div>
-          <div className="form-group" style={{ flex:1 }}>
-            <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <Compass style={{ width:13, height:13, color:'var(--gold)' }} /> Longitude
-            </label>
-            <input type="number" name="lon" step="0.0001" value={formData.lon} onChange={handleChange} className="form-input" />
-            <span className="input-helper">
-              {formData.lon >= 0 ? `${formData.lon.toFixed(2)}° E` : `${Math.abs(formData.lon).toFixed(2)}° W`}
-            </span>
+        </div>
+
+        <button type="submit" className="btn btn-gold" style={{ width: '100%', marginTop: '4px' }}>
+          <RefreshCw style={{ width: 15, height: 15, animation: 'spin-slow 2s linear infinite' }} />
+          {t('calc_button')}
+        </button>
+      </form>
+
+      {/* Map Modal dialog */}
+      {showMapModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '650px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Map size={18} /> {t('map_modal_title')}
+              </h3>
+              <button
+                onClick={() => setShowMapModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Geocoder Search form */}
+            <form onSubmit={handleMapSearch} style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder={t('search_placeholder')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-subtle)',
+                    background: 'rgba(255,255,255,0.03)',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
+              </div>
+              <button
+                type="submit"
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--gold)',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Search
+              </button>
+            </form>
+
+            {mapError && (
+              <div style={{ color: 'var(--red)', fontSize: '12px' }}>
+                {mapError}
+              </div>
+            )}
+
+            {/* Leaflet div */}
+            <div
+              id="leaflet-picker-container"
+              style={{
+                height: '350px',
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                background: '#1a1a1a',
+                zIndex: 1
+              }}
+            />
+
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              📍 Click anywhere on the map or drag the marker to pinpoint location. Coordinates and solar timezone will calculate automatically.
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button
+                onClick={() => setShowMapModal(false)}
+                className="btn"
+                style={{ background: 'none', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', cursor: 'pointer', padding: '10px 20px', borderRadius: '8px' }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={handleConfirmLocation}
+                className="btn btn-gold"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', borderRadius: '8px' }}
+              >
+                <Check size={16} />
+                {t('confirm_loc')}
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Timezone */}
-        <div className="form-group">
-          <label className="form-label" style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-            <Globe style={{ width:13, height:13, color:'var(--gold)' }} /> Timezone Offset (Hours from UTC)
-          </label>
-          <input type="number" name="timezoneOffset" step="0.5" value={formData.timezoneOffset} onChange={handleChange} className="form-input" />
-          <span className="input-helper">
-            {formData.timezoneOffset >= 0 ? `UTC +${formData.timezoneOffset}` : `UTC ${formData.timezoneOffset}`}
-            {formData.timezoneOffset === 5.5 ? ' (IST – India)' : formData.timezoneOffset === 0 ? ' (GMT – UK)' : ''}
-          </span>
-        </div>
-      </div>
-
-      <button type="submit" className="btn btn-gold" style={{ width:'100%', marginTop:'4px' }}>
-        <RefreshCw style={{ width:15, height:15, animation:'spin-slow 2s linear infinite' }} />
-        Calculate Kundli (Lagna & Vargas)
-      </button>
-    </form>
+      )}
+    </div>
   );
 }
