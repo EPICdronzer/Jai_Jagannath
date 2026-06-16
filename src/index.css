@@ -1797,3 +1797,89 @@ body {
 
   .header-title-line1 { font-size: 15px; }
 }
+
+/* ============================================
+   PWA INSTALL NUDGE STYLING
+   ============================================ */
+.cc-install-nudge {
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10, 12, 22, 0.95);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  margin: 16px auto;
+  max-width: 800px;
+  width: 90%;
+  animation: ccInstallNudgeIn 0.3s ease-out;
+  box-shadow: var(--shadow-card);
+  gap: 16px;
+}
+
+@keyframes ccInstallNudgeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cc-install-nudge-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cc-install-nudge-icon {
+  font-size: 24px;
+}
+
+.cc-install-nudge-title {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.cc-install-nudge-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.cc-install-nudge-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cc-install-nudge-btn {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.cc-install-nudge-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #000;
+}
+
+.cc-install-nudge-btn:hover {
+  opacity: 0.9;
+}
+
+@container (max-width: 450px) {
+  .cc-install-nudge-icon { display: none; }
+  .cc-install-nudge {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cc-install-nudge-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

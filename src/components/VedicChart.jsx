@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getVargaChartData, calculateVargaSign, ZODIAC_SIGNS } from '../utils/astrology';
+import { getVargaChartData, getVargaChartDataFromAPI, calculateVargaSign, ZODIAC_SIGNS } from '../utils/astrology';
 
 const VARGA_DETAILS = [
   { value: 1, label: 'D-1 (Rasi Chart)' },
@@ -32,13 +32,15 @@ const PLANET_SHORT_CODES = {
   Pluto: 'Pl'
 };
 
-export default function VedicChart({ planets, defaultVarga = 1 }) {
+export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts }) {
   const [chartStyle, setChartStyle] = useState('south');
   const [activeVarga, setActiveVarga] = useState(defaultVarga);
 
   if (!planets) return null;
 
-  const chartData = getVargaChartData(planets, activeVarga);
+  const chartData = divisionalCharts
+    ? getVargaChartDataFromAPI(divisionalCharts, activeVarga, planets)
+    : getVargaChartData(planets, activeVarga);
 
   const southBoxMapping = [
     { sign: 11, r: 0, c: 0 }, { sign: 0, r: 0, c: 1 }, { sign: 1, r: 0, c: 2 }, { sign: 2, r: 0, c: 3 },

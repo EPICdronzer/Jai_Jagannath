@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { calculateBirthData } from './utils/astrology';
+import { calculateBirthData, calculateBirthDataAsync } from './utils/astrology';
 import BirthForm from './components/BirthForm';
 import PlanetaryTable from './components/PlanetaryTable';
 import VedicChart from './components/VedicChart';
 import DashaView from './components/DashaView';
 import PanchangamView from './components/PanchangamView';
 import CompatibilityView from './components/CompatibilityView';
-import { Compass, Star, Zap, List, Heart, Menu, X } from 'lucide-react';
+import AshtakavargaView from './components/AshtakavargaView';
+import BalasView from './components/BalasView';
+import LongevityView from './components/LongevityView';
+import YogasView from './components/YogasView';
+import ArudhasView from './components/ArudhasView';
+import ChakrasView from './components/ChakrasView';
+import SaturnTransitView from './components/SaturnTransitView';
+import ArgalaView from './components/ArgalaView';
+import SahamsView from './components/SahamsView';
+import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map } from 'lucide-react';
 
 export default function App() {
   const defaultBirth = {
@@ -25,15 +34,31 @@ export default function App() {
   const [params, setParams] = useState(defaultBirth);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    try {
-      const data = calculateBirthData(params);
-      setBirthData(data);
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    }
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    calculateBirthDataAsync(params)
+      .then(result => {
+        if (active) {
+          setBirthData(result.data);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        if (active) {
+          console.error(err);
+          setError(err.message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [params]);
 
   const handleFormSubmit = (newParams) => {
@@ -41,11 +66,21 @@ export default function App() {
   };
 
   const tabs = [
-    { id: 'basics', label: 'Chart & Planets', icon: <Compass /> },
-    { id: 'vargas', label: 'Divisional Charts', icon: <Star /> },
-    { id: 'dashas', label: 'Vimshottari Dasha', icon: <Zap /> },
-    { id: 'panchang', label: 'Panchangam', icon: <List /> },
-    { id: 'compatibility', label: 'Guna Milan', icon: <Heart /> }
+    { id: 'basics', label: 'Basic Info', icon: <Compass size={18} /> },
+    { id: 'details', label: 'Details', icon: <List size={18} /> },
+    { id: 'vargas', label: 'Charts', icon: <Star size={18} /> },
+    { id: 'dashas', label: 'Dasha', icon: <Zap size={18} /> },
+    { id: 'saturn', label: 'Saturn', icon: <Moon size={18} /> },
+    { id: 'chakras', label: 'Chakras', icon: <Activity size={18} /> },
+    { id: 'balas', label: 'Balas', icon: <Shield size={18} /> },
+    { id: 'ashtakavarga', label: 'Ashtakavarga', icon: <Map size={18} /> },
+    { id: 'yogas', label: 'Yogas', icon: <Sun size={18} /> },
+    { id: 'longevity', label: 'Longevity', icon: <Heart size={18} /> },
+    { id: 'arudhas', label: 'Arudhas', icon: <Eye size={18} /> },
+    { id: 'argala', label: 'Argala', icon: <Link size={18} /> },
+    { id: 'sahams', label: 'Sahams', icon: <Star size={18} /> },
+    { id: 'panchang', label: 'Panchangam', icon: <List size={18} /> },
+    { id: 'compatibility', label: 'Guna Milan', icon: <Heart size={18} /> }
   ];
 
   return (
@@ -124,7 +159,7 @@ export default function App() {
         )}
 
         {/* Tab Content */}
-        {birthData ? (
+        {birthData && !loading ? (
           <>
             {/* ── BASICS TAB ── */}
             {currentTab === 'basics' && (
@@ -160,11 +195,11 @@ export default function App() {
                   <div className="charts-row">
                     <div>
                       <div className="chart-label">Rasi Chart (D-1)</div>
-                      <VedicChart planets={birthData.planets} defaultVarga={1} />
+                      <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} />
                     </div>
                     <div>
                       <div className="chart-label">Navamsa Chart (D-9)</div>
-                      <VedicChart planets={birthData.planets} defaultVarga={9} />
+                      <VedicChart planets={birthData.planets} defaultVarga={9} divisionalCharts={birthData.raw?.divisional_charts} />
                     </div>
                   </div>
                   <PlanetaryTable planets={birthData.planets} />
@@ -175,7 +210,7 @@ export default function App() {
             {/* ── VARGAS TAB ── */}
             {currentTab === 'vargas' && (
               <div style={{display:'flex', flexDirection:'column', gap:'20px', alignItems:'center'}}>
-                <VedicChart planets={birthData.planets} defaultVarga={1} />
+                <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} />
                 <PlanetaryTable planets={birthData.planets} />
               </div>
             )}
@@ -194,6 +229,76 @@ export default function App() {
             {currentTab === 'panchang' && (
               <div style={{display:'flex', justifyContent:'center'}}>
                 <PanchangamView panchang={birthData.panchang} />
+              </div>
+            )}
+
+            {/* ── DETAILS TAB ── */}
+            {currentTab === 'details' && (
+              <div style={{display:'flex', flexDirection:'column', gap:'20px', alignItems:'center'}}>
+                <PlanetaryTable planets={birthData.planets} />
+              </div>
+            )}
+
+            {/* ── SATURN TAB ── */}
+            {currentTab === 'saturn' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <SaturnTransitView saturnTransits={birthData.raw?.saturn_transits} />
+              </div>
+            )}
+
+            {/* ── CHAKRAS TAB ── */}
+            {currentTab === 'chakras' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <ChakrasView rawData={birthData.raw} />
+              </div>
+            )}
+
+            {/* ── BALAS TAB ── */}
+            {currentTab === 'balas' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <BalasView shadBala={birthData.raw?.shad_bala} bhavaBala={birthData.raw?.bhava_bala} />
+              </div>
+            )}
+
+            {/* ── ASHTAKAVARGA TAB ── */}
+            {currentTab === 'ashtakavarga' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <AshtakavargaView ashtakavarga={birthData.raw?.ashtakavarga} />
+              </div>
+            )}
+
+            {/* ── YOGAS TAB ── */}
+            {currentTab === 'yogas' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <YogasView yogas={birthData.raw?.yogas} doshas={birthData.raw?.doshas} />
+              </div>
+            )}
+
+            {/* ── LONGEVITY TAB ── */}
+            {currentTab === 'longevity' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <LongevityView longevity={birthData.raw?.longevity_prediction} />
+              </div>
+            )}
+
+            {/* ── ARUDHAS TAB ── */}
+            {currentTab === 'arudhas' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <ArudhasView arudhaPadhas={birthData.raw?.arudha_padhas} />
+              </div>
+            )}
+
+            {/* ── ARGALA TAB ── */}
+            {currentTab === 'argala' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <ArgalaView rawData={birthData.raw} />
+              </div>
+            )}
+
+            {/* ── SAHAMS TAB ── */}
+            {currentTab === 'sahams' && (
+              <div style={{display:'flex', justifyContent:'center'}}>
+                <SahamsView rawData={birthData.raw} />
               </div>
             )}
 

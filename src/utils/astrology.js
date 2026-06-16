@@ -196,7 +196,7 @@ export function calculateBirthData({ dateStr, timeStr, lat, lon, timezoneOffset 
 
   // 3. Rahu and Ketu Calculations (Mean Nodes)
   const T_centuries = astroTime.ut / 36525;
-  const omega = 259.183275 - 1934.1420 * T_centuries + 0.002078 * T_centuries * T_centuries + 0.0000022 * T_centuries * T_centuries * T_centuries;
+  const omega = 125.0445550 - 1934.1361849 * T_centuries + 0.0020762 * T_centuries * T_centuries + (T_centuries * T_centuries * T_centuries) / 467410 - (T_centuries * T_centuries * T_centuries * T_centuries) / 18999000;
   const rahuTropical = ((omega % 360) + 360) % 360;
   const rahuSidereal = (rahuTropical - ayanamsa + 360) % 360;
   
@@ -407,16 +407,16 @@ export function calculateVargaSign(planetLong, vargaNum) {
     
     if (isOddRasi) {
       if (d <= 5) return 0;   // Mars (Aries)
-      if (d <= 10) return 1;  // Venus (Taurus)
-      if (d <= 18) return 2;  // Mercury (Gemini)
-      if (d <= 25) return 8;  // Jupiter (Sagittarius)
-      return 10;              // Saturn (Aquarius)
+      if (d <= 10) return 10; // Saturn (Aquarius)
+      if (d <= 18) return 8;  // Jupiter (Sagittarius)
+      if (d <= 25) return 2;  // Mercury (Gemini)
+      return 1;               // Venus (Taurus)
     } else {
       if (d <= 5) return 1;   // Venus (Taurus)
-      if (d <= 12) return 2;  // Mercury (Gemini)
-      if (d <= 20) return 8;  // Jupiter (Sagittarius)
-      if (d <= 25) return 0;  // Mars (Aries)
-      return 10;              // Saturn (Aquarius)
+      if (d <= 12) return 5;  // Mercury (Virgo)
+      if (d <= 20) return 11; // Jupiter (Pisces)
+      if (d <= 25) return 9;  // Saturn (Capricorn)
+      return 7;               // Mars (Scorpio)
     }
   }
 
@@ -663,4 +663,204 @@ export function calculateGunaMilan(girlLong, boyLong) {
     },
     totalPoints
   };
+}
+
+// --- High Precision API Integration ---
+
+const JHORA_API_URL = 'https://jagannatha-hora-359167915530.europe-west1.run.app';
+
+export function transformAPIToLocalFormat(horoscope, params) {
+  const ayanamsa = horoscope.ayanamsa_value;
+  
+  // Construct planets list
+  const d1Chart = horoscope.divisional_charts['D-1_rasi'];
+  const retrogradePlanets = horoscope.planetary_states?.retrograde_planets || [];
+  
+  const signNames = [
+    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+  ];
+
+  const planetsData = {};
+  
+  // List of planets to map
+  const planetsList = [
+    { apiKey: 'Sun', localKey: 'Sun' },
+    { apiKey: 'Moon', localKey: 'Moon' },
+    { apiKey: 'Mars', localKey: 'Mars' },
+    { apiKey: 'Mercury', localKey: 'Mercury' },
+    { apiKey: 'Jupiter', localKey: 'Jupiter' },
+    { apiKey: 'Venus', localKey: 'Venus' },
+    { apiKey: 'Saturn', localKey: 'Saturn' },
+    { apiKey: 'Rahu', localKey: 'Rahu' },
+    { apiKey: 'Ketu', localKey: 'Ketu' },
+    { apiKey: 'Uranus', localKey: 'Uranus' },
+    { apiKey: 'Neptune', localKey: 'Neptune' },
+    { apiKey: 'Pluto', localKey: 'Pluto' },
+    { apiKey: 'Ascendant', localKey: 'Lagna' }
+  ];
+
+  for (const item of planetsList) {
+    const apiPlanet = d1Chart[item.apiKey];
+    if (!apiPlanet) continue;
+    
+    const signIdx = signNames.indexOf(apiPlanet.sign);
+    const siderealLong = (signIdx * 30 + apiPlanet.longitude + 360) % 360;
+    const tropicalLong = (siderealLong + ayanamsa + 360) % 360;
+    
+    planetsData[item.localKey] = {
+      name: item.localKey,
+      tropicalLong,
+      siderealLong,
+      latitude: 0,
+      rasi: getRasiInfo(siderealLong),
+      nakshatra: getNakshatraInfo(siderealLong),
+      isRetrograde: retrogradePlanets.includes(item.apiKey)
+    };
+  }
+
+  // Calculate Panchangam using high-precision values
+  const tithiInfo = getTithi(planetsData['Sun'].tropicalLong, planetsData['Moon'].tropicalLong);
+  
+  const [year, month, day] = params.dateStr.split('-').map(Number);
+  const [hour, minute, second] = params.timeStr.split(':').map(Number);
+  const utcTimeMs = Date.UTC(year, month - 1, day, hour, minute, second) - parseFloat(params.timezoneOffset) * 60 * 60 * 1000;
+  const localDateForVara = new Date(utcTimeMs + parseFloat(params.timezoneOffset) * 60 * 60 * 1000);
+  const dayIdx = localDateForVara.getUTCDay();
+  const vara = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIdx];
+  
+  let sumYoga = (planetsData['Sun'].siderealLong + planetsData['Moon'].siderealLong) % 360;
+  const yogaNames = [
+    'Vishkumbha', 'Preeti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti', 
+    'Shoola', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi', 
+    'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla', 
+    'Brahma', 'Indra', 'Vaidhriti'
+  ];
+  const yogaIdx = Math.floor(sumYoga / (360 / 27));
+  const yoga = yogaNames[yogaIdx % 27];
+
+  const diffMoonSun = (planetsData['Moon'].tropicalLong - planetsData['Sun'].tropicalLong + 360) % 360;
+  const karanaNames = [
+    'Kinstughna', 'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti',
+    'Shakuni', 'Chatushpada', 'Naga'
+  ];
+  const karanaIdx = Math.floor(diffMoonSun / 6);
+  const karana = karanaNames[karanaIdx] || 'Unknown';
+
+  const panchang = {
+    tithi: tithiInfo,
+    vara,
+    yoga,
+    karana,
+    nakshatra: planetsData['Moon'].nakshatra.name
+  };
+
+  return {
+    ayanamsa,
+    astroTime: { ut: utcTimeMs / 1000 / 24 / 3600 },
+    utcDate: new Date(utcTimeMs),
+    localDate: localDateForVara,
+    planets: planetsData,
+    panchang,
+    raw: horoscope
+  };
+}
+
+export async function calculateBirthDataAsync(params) {
+  const payload = {
+    date: params.dateStr,
+    time: params.timeStr,
+    place: params.cityPreset || 'Preset Location',
+    latitude: parseFloat(params.lat),
+    longitude: parseFloat(params.lon),
+    timezone: parseFloat(params.timezoneOffset),
+    elevation: 0,
+    ayanamsa_mode: 'Lahiri'
+  };
+
+  try {
+    const res = await fetch(`${JHORA_API_URL}/horoscope`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`API error: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (data && data.horoscope) {
+      const transformed = transformAPIToLocalFormat(data.horoscope, params);
+      return { data: transformed, mode: 'api' };
+    }
+    throw new Error('Invalid response structure');
+  } catch (err) {
+    console.warn('High precision API call failed, falling back to local engine:', err);
+    const localData = calculateBirthData(params);
+    return { data: localData, mode: 'local' };
+  }
+}
+
+// Maps high-precision divisional charts from API directly to chart rendering grid
+export function getVargaChartDataFromAPI(divisionalCharts, vargaNum, planetsData) {
+  const chart = Array.from({ length: 12 }, () => []);
+  const keyMap = {
+    1: 'D-1_rasi',
+    2: 'D-2_hora',
+    3: 'D-3_drekkana',
+    4: 'D-4_chaturthamsa',
+    5: 'D-5_panchamsa',
+    6: 'D-6_shashthamsa',
+    7: 'D-7_saptamsa',
+    8: 'D-8_ashtamsa',
+    9: 'D-9_navamsa',
+    10: 'D-10_dasamsa',
+    11: 'D-11_rudramsa',
+    12: 'D-12_dwadasamsa',
+    16: 'D-16_shodasamsa',
+    20: 'D-20_vimsamsa',
+    24: 'D-24_chaturvimsamsa',
+    27: 'D-27_nakshatramsa',
+    30: 'D-30_trimsamsa',
+    40: 'D-40_khavedamsa',
+    45: 'D-45_akshavedamsa',
+    60: 'D-60_shastiamsa'
+  };
+  
+  const key = keyMap[vargaNum] || `D-${vargaNum}`;
+  const chartData = divisionalCharts?.[key];
+  if (!chartData) {
+    return getVargaChartData(planetsData, vargaNum);
+  }
+
+  const signNames = [
+    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+  ];
+
+  for (const name of Object.keys(chartData)) {
+    const pInfo = chartData[name];
+    const signIdx = signNames.indexOf(pInfo.sign);
+    if (signIdx !== -1) {
+      const isRetro = planetsData[name === 'Ascendant' ? 'Lagna' : name]?.isRetrograde || false;
+      chart[signIdx].push({
+        name: name === 'Ascendant' ? 'Asc' : name.substring(0, 2),
+        isLagna: name === 'Ascendant',
+        isRetrograde: isRetro
+      });
+    }
+  }
+
+  return chart;
 }
