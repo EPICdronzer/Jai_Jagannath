@@ -3,7 +3,7 @@ import { PRESET_CITIES } from '../utils/cities';
 import { Calendar, Clock, MapPin, Globe, Compass, RefreshCw, Search, Check, X, Map } from 'lucide-react';
 import { translations } from '../utils/translations';
 
-export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
+export default function BirthForm({ onSubmit, lang = 'en', defaultValues, collectExtra = false }) {
   const t = (key) => translations[lang]?.[key] || key;
 
   const [formData, setFormData] = useState({
@@ -19,6 +19,15 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
     timezoneOffset: defaultValues?.timezoneOffset ?? '',
     cityPreset: defaultValues?.cityPreset || ''
   });
+
+  const [extraProfile, setExtraProfile] = useState({
+    currentCity: '',
+    relationshipStatus: '',
+    careerField: '',
+    concerns: '',
+    birthTimeAccuracy: 'exact'
+  });
+  const [showExtra, setShowExtra] = useState(false);
 
   const [showMapModal, setShowMapModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -229,16 +238,19 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
 
     const timeStr24 = `${String(hr).padStart(2, '0')}:${min}:${sec}`;
 
-    onSubmit({
-      name: formData.name || 'Subject',
-      gender: formData.gender || 'other',
-      dateStr: formData.dateStr,
-      timeStr: timeStr24,
-      lat: parseFloat(formData.lat),
-      lon: parseFloat(formData.lon),
-      timezoneOffset: parseFloat(formData.timezoneOffset),
-      cityPreset: formData.cityPreset
-    });
+    onSubmit(
+      {
+        name: formData.name || 'Subject',
+        gender: formData.gender || 'other',
+        dateStr: formData.dateStr,
+        timeStr: timeStr24,
+        lat: parseFloat(formData.lat),
+        lon: parseFloat(formData.lon),
+        timezoneOffset: parseFloat(formData.timezoneOffset),
+        cityPreset: formData.cityPreset
+      },
+      collectExtra ? extraProfile : undefined
+    );
   };
 
   return (
@@ -471,6 +483,99 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
               {formData.timezoneOffset !== '' && (parseFloat(formData.timezoneOffset) >= 0 ? `UTC +${formData.timezoneOffset}` : `UTC ${formData.timezoneOffset}`)}
             </span>
           </div>
+          {/* ── EXTRA PROFILE FOR DEEP KUNDALI REPORT ── */}
+          {collectExtra && (
+            <div style={{ marginTop: '8px', border: '1px solid rgba(234,179,8,0.18)', borderRadius: '10px', overflow: 'hidden' }}>
+              <button
+                type="button"
+                onClick={() => setShowExtra(o => !o)}
+                style={{
+                  width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '11px 14px', background: 'rgba(234,179,8,0.05)', border: 'none', cursor: 'pointer',
+                  color: 'var(--gold)', fontWeight: 700, fontSize: '12px'
+                }}
+              >
+                <span>🔮 Deep Kundali Profile (Optional but Recommended)</span>
+                <span>{showExtra ? '▲' : '▼'}</span>
+              </button>
+              {showExtra && (
+                <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                  {/* Birth Time Accuracy */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">⏱ Birth Time Accuracy</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[['exact','Exact'],['approx','Approx'],['unknown','Unknown']].map(([val, lbl]) => (
+                        <button key={val} type="button"
+                          onClick={() => setExtraProfile(p => ({ ...p, birthTimeAccuracy: val }))}
+                          style={{
+                            flex: 1, padding: '7px 4px', borderRadius: '7px', border: extraProfile.birthTimeAccuracy === val ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)',
+                            background: extraProfile.birthTimeAccuracy === val ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.03)',
+                            color: extraProfile.birthTimeAccuracy === val ? 'var(--gold)' : 'var(--text-secondary)',
+                            fontWeight: extraProfile.birthTimeAccuracy === val ? 700 : 400, cursor: 'pointer', fontSize: '11px', transition: 'all 0.2s'
+                          }}>{lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Current City */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">🏙 Current City of Residence</label>
+                    <input
+                      type="text" value={extraProfile.currentCity}
+                      onChange={e => setExtraProfile(p => ({ ...p, currentCity: e.target.value }))}
+                      placeholder="e.g. Bhubaneswar, Odisha" className="form-input"
+                    />
+                  </div>
+
+                  {/* Relationship Status */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">💑 Relationship Status</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                      {[['single','Single'],['dating','Dating'],['married','Married'],['divorced','Divorced']].map(([val, lbl]) => (
+                        <button key={val} type="button"
+                          onClick={() => setExtraProfile(p => ({ ...p, relationshipStatus: val }))}
+                          style={{
+                            flex: '1 0 80px', padding: '7px 6px', borderRadius: '7px',
+                            border: extraProfile.relationshipStatus === val ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)',
+                            background: extraProfile.relationshipStatus === val ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.03)',
+                            color: extraProfile.relationshipStatus === val ? 'var(--gold)' : 'var(--text-secondary)',
+                            fontWeight: extraProfile.relationshipStatus === val ? 700 : 400, cursor: 'pointer', fontSize: '11px', transition: 'all 0.2s'
+                          }}>{lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Career Field */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">💼 Career Field / Profession</label>
+                    <input
+                      type="text" value={extraProfile.careerField}
+                      onChange={e => setExtraProfile(p => ({ ...p, careerField: e.target.value }))}
+                      placeholder="e.g. Software Engineer, Business, Student..." className="form-input"
+                    />
+                  </div>
+
+                  {/* Major Concerns */}
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">🎯 Major Life Concerns</label>
+                    <textarea
+                      value={extraProfile.concerns}
+                      onChange={e => setExtraProfile(p => ({ ...p, concerns: e.target.value }))}
+                      placeholder="e.g. Career growth, marriage timing, health, financial stability, mental peace..."
+                      className="form-input" rows={3}
+                      style={{ resize: 'vertical', minHeight: '70px', fontFamily: 'inherit', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', background: 'rgba(234,179,8,0.04)', padding: '8px 10px', borderRadius: '6px', border: '1px solid rgba(234,179,8,0.1)' }}>
+                    💡 These details help contextualise the Kundali Report with more personalised insights. They are not shared and remain local to your browser.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <button type="submit" className="btn btn-gold" style={{ width: '100%', marginTop: '4px' }}>

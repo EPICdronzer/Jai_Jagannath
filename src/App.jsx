@@ -17,7 +17,8 @@ import ArgalaView from './components/ArgalaView';
 import SahamsView from './components/SahamsView';
 import PredictionsView from './components/PredictionsView';
 import PlanetaryStatesView from './components/PlanetaryStatesView';
-import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award } from 'lucide-react';
+import KundaliReportView from './components/KundaliReportView';
+import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award, FileText } from 'lucide-react';
 import { translations } from './utils/translations';
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
   const [params, setParams] = useState(null); // Load empty boxes by default
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [extraProfile, setExtraProfile] = useState({});
 
   const navRef = useRef(null);
   const t = (key) => translations[lang]?.[key] || key;
@@ -63,8 +65,9 @@ export default function App() {
     };
   }, [params]);
 
-  const handleFormSubmit = (newParams) => {
+  const handleFormSubmit = (newParams, newExtra) => {
     setParams(newParams);
+    if (newExtra) setExtraProfile(newExtra);
   };
 
   const scrollNav = (direction) => {
@@ -76,6 +79,7 @@ export default function App() {
 
   const tabs = [
     { id: 'basics', label: t('basics'), icon: <Compass size={18} /> },
+    { id: 'kundali', label: lang === 'en' ? 'Kundali Report' : 'कुंडली रिपोर्ट', icon: <FileText size={18} /> },
     { id: 'details', label: t('details'), icon: <List size={18} /> },
     { id: 'vargas', label: t('charts'), icon: <Star size={18} /> },
     { id: 'predictions', label: t('predictions'), icon: <Award size={18} /> },
@@ -222,7 +226,7 @@ export default function App() {
           /* Empty Initial State - Starry Sky Welcome Panel */
           <div className="basics-grid" style={{ minHeight: '60vh' }}>
             <div className="basics-left">
-              <BirthForm onSubmit={handleFormSubmit} lang={lang} />
+              <BirthForm onSubmit={handleFormSubmit} lang={lang} collectExtra={true} />
             </div>
             <div className="basics-right" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <div style={{
@@ -265,7 +269,7 @@ export default function App() {
             {currentTab === 'basics' && (
               <div className="basics-grid">
                 <div className="basics-left">
-                  <BirthForm onSubmit={handleFormSubmit} lang={lang} defaultValues={params} />
+                  <BirthForm onSubmit={handleFormSubmit} lang={lang} defaultValues={params} collectExtra={true} />
 
                   {/* Quick Profile */}
                   {birthData && (
@@ -335,6 +339,13 @@ export default function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', width: '100%' }}>
                       <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} showAllVargas={true} />
                       <PlanetaryTable planets={birthData.planets} />
+                    </div>
+                  )}
+
+                  {/* ── KUNDALI REPORT TAB ── */}
+                  {currentTab === 'kundali' && (
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '0 0 20px' }}>
+                      <KundaliReportView birthData={birthData} params={params} extraProfile={extraProfile} />
                     </div>
                   )}
 
