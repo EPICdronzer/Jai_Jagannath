@@ -249,7 +249,7 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues }) {
             <Globe style={{ width: 18, height: 18, animation: 'pulse 2s infinite' }} />
             {t('birth_details')}
           </h2>
-          <span className="subtitle">Jagannatha Hora</span>
+          <span className="subtitle">Jai Jagannath 🙏</span>
         </div>
 
         <div className="card-body">

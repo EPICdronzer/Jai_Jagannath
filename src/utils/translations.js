@@ -14,6 +14,7 @@ export const translations = {
     arudhas: "Arudhas",
     argala: "Argala",
     sahams: "Sahams",
+    panchang: "Panchang",
     compatibility: "Guna Milan",
     predictions: "Predictions",
 
@@ -65,6 +66,7 @@ export const translations = {
     arudhas: "आरूढ़ पद",
     argala: "अर्गला",
     sahams: "सहम",
+    panchang: "पंचांग",
     compatibility: "गुण मिलान",
     predictions: "फलकथन",
 

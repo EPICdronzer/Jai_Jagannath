@@ -16,6 +16,7 @@ import SaturnTransitView from './components/SaturnTransitView';
 import ArgalaView from './components/ArgalaView';
 import SahamsView from './components/SahamsView';
 import PredictionsView from './components/PredictionsView';
+import PlanetaryStatesView from './components/PlanetaryStatesView';
 import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award } from 'lucide-react';
 import { translations } from './utils/translations';
 
@@ -98,9 +99,9 @@ export default function App() {
       <header className="app-header">
         <div className="header-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="header-brand">
-            <div className="header-logo">🕉️</div>
+            <div className="header-logo">🙏</div>
             <div>
-              <div className="header-title-line1">JAGANNATHA HORA</div>
+              <div className="header-title-line1">JAI JAGANNATH</div>
               <div className="header-title-line2">Vedic Astrology Workstation</div>
             </div>
           </div>
@@ -311,6 +312,7 @@ export default function App() {
                         </div>
                       </div>
                       <PlanetaryTable planets={birthData.planets} />
+                      <PlanetaryStatesView planets={birthData.planets} lang={lang} />
                     </>
                   ) : null}
                 </div>
@@ -356,7 +358,7 @@ export default function App() {
                   {/* ── PANCHANG TAB ── */}
                   {currentTab === 'panchang' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <PanchangamView panchang={birthData.panchang} />
+                      <PanchangamView panchang={birthData.panchang} lang={lang} />
                     </div>
                   )}
 
@@ -445,7 +447,26 @@ export default function App() {
 
       {/* Footer */}
       <footer className="app-footer">
-        <span>© {new Date().getFullYear()} Jagannatha Hora React Suite</span>
+        <span>
+          Made with 🙏 by{' '}
+          <a
+            href="https://portfolio-harsh-vashishth.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--gold)',
+              textDecoration: 'none',
+              fontWeight: 700,
+              borderBottom: '1px solid rgba(234,179,8,0.4)',
+              paddingBottom: '1px',
+              transition: 'border-color 0.2s'
+            }}
+            onMouseEnter={e => e.target.style.borderColor = 'var(--gold)'}
+            onMouseLeave={e => e.target.style.borderColor = 'rgba(234,179,8,0.4)'}
+          >
+            Harsh Vashishth
+          </a>
+        </span>
         <span>Ayanamsa: Lahiri (Chitra Paksha) | VSOP87 Planetary Model | astronomy-engine</span>
       </footer>
     </div>
