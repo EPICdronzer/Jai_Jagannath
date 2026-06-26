@@ -14,11 +14,18 @@ const DEFAULT_LOCATION = {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-function formatLocalTime(d) {
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-function formatLocalDate(d) {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+// ── Given an ABSOLUTE instant (epoch ms) and a timezone offset (hours),
+//    return the LOCAL wall-clock date/time string for that place.
+//    We shift the UTC instant by the offset, then read it back using
+//    UTC getters — this avoids re-shifting by the browser's own
+//    local timezone, which is the bug that caused the chart to drift
+//    when the location changed. ──
+function getLocalDateTimeAt(epochMs, offsetHours) {
+  const shifted = new Date(epochMs + offsetHours * 3600 * 1000);
+  return {
+    dateStr: `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`,
+    timeStr: `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`,
+  };
 }
 
 // ─── PANCHANG DISPLAY ────────────────────────────────────────────────────────
@@ -35,9 +42,11 @@ function PanchangRow({ label, value }) {
 }
 
 export default function PrashnaView({ lang = 'en' }) {
-  // ── Capture current time ONCE on mount — never changes until page refresh ──
-  const frozenTimeRef = useRef(new Date());
-  const frozenTime    = frozenTimeRef.current;
+  // ── Capture the ABSOLUTE moment ONCE on mount — never changes until
+  //    browser refresh. Stored as epoch ms (UTC-based), NOT as local
+  //    wall-clock digits, so it's independent of any timezone choice. ──
+  const frozenInstantRef = useRef(Date.now());
+  const frozenInstant = frozenInstantRef.current;
 
   // ── Live clock (display only, does NOT affect calculations) ──
   const [clockDisplay, setClockDisplay] = useState(new Date());
@@ -61,16 +70,24 @@ export default function PrashnaView({ lang = 'en' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ── Calculate whenever location changes (time is always frozen) ──
+  // ── Calculate whenever location changes. The absolute instant never
+  //    moves — only its LOCAL representation (date/time string) at the
+  //    chosen place changes, which is what we feed to the engine along
+  //    with that place's offset. This guarantees the same UTC instant
+  //    is reconstructed (local time − offset = UTC) no matter which
+  //    location is selected, so the Prashna moment itself never drifts —
+  //    only the ascendant/houses rotate, which is the correct
+  //    astrological effect of relocating a chart. ──
   const calculate = useCallback(async (loc) => {
     setLoading(true);
     setError(null);
     try {
+      const { dateStr, timeStr } = getLocalDateTimeAt(frozenInstant, loc.timezone);
       const params = {
         name: 'Prashna',
         gender: 'other',
-        dateStr: formatLocalDate(frozenTime),
-        timeStr: formatLocalTime(frozenTime),
+        dateStr,
+        timeStr,
         lat: loc.lat,
         lon: loc.lon,
         timezoneOffset: loc.timezone,
@@ -84,7 +101,7 @@ export default function PrashnaView({ lang = 'en' }) {
     } finally {
       setLoading(false);
     }
-  }, [frozenTime]);
+  }, [frozenInstant]);
 
   // ── Calculate on mount and when location changes ──
   useEffect(() => {
@@ -157,17 +174,27 @@ export default function PrashnaView({ lang = 'en' }) {
 
   const handleConfirmLocation = () => {
     const { lat, lon, name } = tempCoords.current;
-    // Smart timezone: round lon/15 to nearest 0.5h
+    // Smart timezone: round lon/15 to nearest 0.5h (rough geometric
+    // estimate — not DST/political-boundary aware; disclaimer covers this)
     const tz = Math.round((lon / 15) * 2) / 2;
     const loc = { name: name || `${lat.toFixed(2)}N ${lon.toFixed(2)}E`, lat, lon, timezone: tz };
-    setCityPreset(loc.name);
+    // Custom map locations don't correspond to a PRESET_CITIES entry,
+    // so keep the select on "Custom" rather than desyncing it with a
+    // name that has no matching <option>.
+    setCityPreset('');
     setLocation(loc);
     setShowMapModal(false);
   };
 
-  // ── Formatted frozen time for display ──
-  const frozenDateStr = frozenTime.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const frozenTimeStr = formatLocalTime(frozenTime);
+  // ── Formatted frozen time for display, projected into the CURRENTLY
+  //    SELECTED location's local clock (not the browser's local time,
+  //    and not hardcoded to IST) ──
+  const { dateStr: displayDateStr, timeStr: displayTimeStr } =
+    getLocalDateTimeAt(frozenInstant, location.timezone);
+  const frozenDateStr = new Date(`${displayDateStr}T${displayTimeStr}`)
+    .toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const frozenTimeStr = displayTimeStr;
+  const tzLabel = `UTC${location.timezone >= 0 ? '+' : ''}${location.timezone}`;
 
   // ── Panchang extraction ──
   const panchang = prashnaData?.panchang;
@@ -202,7 +229,7 @@ export default function PrashnaView({ lang = 'en' }) {
                Prashna Kundali ( Current Moment Chart )
             </div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Time frozen at page load • Location changeable below
+              Moment frozen at page load • Location changeable below
             </div>
           </div>
         </div>
@@ -242,11 +269,11 @@ export default function PrashnaView({ lang = 'en' }) {
           <div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> Prashna Time (Frozen)</div>
             <div style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'var(--gold)', fontWeight: 700 }}>
-              {frozenTimeStr} IST (at page load)
+              {frozenTimeStr} local at {location.name} ({tzLabel})
             </div>
           </div>
           <div style={{ fontSize: '10px', color: 'rgba(6,182,212,0.5)', fontStyle: 'italic', flex: 1 }}>
-             Time is locked at page open. Refresh browser to get a new Prashna moment.
+             This is the same absolute moment the page was opened — only re-expressed in the selected location's local time. Refresh the browser to get a new Prashna moment.
           </div>
         </div>
 
@@ -306,7 +333,7 @@ export default function PrashnaView({ lang = 'en' }) {
             fontFamily: 'JetBrains Mono', fontSize: '10px',
             color: 'var(--text-muted)', flex: '1 0 180px'
           }}>
-             {location.lat.toFixed(4)}°N {location.lon.toFixed(4)}°E | UTC+{location.timezone}
+             {location.lat.toFixed(4)}°N {location.lon.toFixed(4)}°E | {tzLabel}
           </div>
         </div>
 
@@ -357,10 +384,10 @@ export default function PrashnaView({ lang = 'en' }) {
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                     <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Moon in</div>
                     <div style={{ fontSize: '14px', fontWeight: 700, color: '#c084fc' }}>
-                      {planets['Moon'].rasi.symbol} {planets['Moon'].rasi.name}
+                      {planets?.['Moon']?.rasi?.symbol} {planets?.['Moon']?.rasi?.name}
                     </div>
                     <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {planets['Moon'].nakshatra.name}
+                      {planets?.['Moon']?.nakshatra?.name}
                     </div>
                   </div>
                 </div>
@@ -424,7 +451,7 @@ export default function PrashnaView({ lang = 'en' }) {
           borderTop: '1px solid rgba(255,255,255,0.04)',
           paddingTop: '10px', lineHeight: 1.6
         }}>
-          <strong>Prashna Jyotish</strong>: The Prashna (question) chart is cast for the exact moment a question arises in the mind or is put to an astrologer. The Lagna and Moon placement at this moment reveal the answer. This chart reflects the cosmic moment you opened this page — a Prashna cannot be recast for the same question.
+          <strong>Prashna Jyotish</strong>: The Prashna (question) chart is cast for the exact moment a question arises in the mind or is put to an astrologer. The Lagna and Moon placement at this moment reveal the answer. This chart reflects the cosmic moment you opened this page — a Prashna cannot be recast for the same question. Custom map locations use a longitude-based timezone estimate, which is geometric only and does not account for political boundaries or daylight-saving rules — please verify for unusual locations.
         </div>
       </div>
 
