@@ -199,7 +199,7 @@ export default function PrashnaView({ lang = 'en' }) {
           </div>
           <div>
             <div style={{ fontWeight: 800, color: '#06b6d4', fontSize: '14px' }}>
-              🔮 Prashna Kundali — Current Moment Chart
+               Prashna Kundali ( Current Moment Chart )
             </div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
               Time frozen at page load • Location changeable below
@@ -234,19 +234,19 @@ export default function PrashnaView({ lang = 'en' }) {
           display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>📅 Chart Calculated For</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> Chart Calculated For</div>
             <div style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#06b6d4', fontWeight: 700 }}>
               {frozenDateStr}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>⏱ Prashna Time (Frozen)</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> Prashna Time (Frozen)</div>
             <div style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'var(--gold)', fontWeight: 700 }}>
               {frozenTimeStr} IST (at page load)
             </div>
           </div>
           <div style={{ fontSize: '10px', color: 'rgba(6,182,212,0.5)', fontStyle: 'italic', flex: 1 }}>
-            🔒 Time is locked at page open. Refresh browser to get a new Prashna moment.
+             Time is locked at page open. Refresh browser to get a new Prashna moment.
           </div>
         </div>
 
@@ -306,7 +306,7 @@ export default function PrashnaView({ lang = 'en' }) {
             fontFamily: 'JetBrains Mono', fontSize: '10px',
             color: 'var(--text-muted)', flex: '1 0 180px'
           }}>
-            📍 {location.lat.toFixed(4)}°N {location.lon.toFixed(4)}°E | UTC+{location.timezone}
+             {location.lat.toFixed(4)}°N {location.lon.toFixed(4)}°E | UTC+{location.timezone}
           </div>
         </div>
 
@@ -325,7 +325,7 @@ export default function PrashnaView({ lang = 'en' }) {
             {/* Rasi Chart */}
             <div>
               <div style={{ fontSize: '11px', color: '#06b6d4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span>♋</span> Prashna Rasi Chart
+                 Prashna Rasi Chart
               </div>
               <VedicChart
                 planets={prashnaData.planets}
@@ -375,7 +375,7 @@ export default function PrashnaView({ lang = 'en' }) {
                   padding: '14px 16px'
                 }}>
                   <div style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '12px', marginBottom: '10px' }}>
-                    📅 Current Panchang
+                     Current Panchang
                   </div>
                   <PanchangRow label="Vara (Weekday)" value={panchang.vara} />
                   <PanchangRow label="Tithi" value={`${panchang.tithi.paksha} ${panchang.tithi.name} (${Math.round(panchang.tithi.percent)}%)`} />
@@ -394,7 +394,7 @@ export default function PrashnaView({ lang = 'en' }) {
                   padding: '14px 16px'
                 }}>
                   <div style={{ fontWeight: 700, color: '#06b6d4', fontSize: '12px', marginBottom: '10px' }}>
-                    🪐 Key Positions Now
+                     Key Positions Now
                   </div>
                   {['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu'].map(name => {
                     const p = planets[name];
@@ -424,7 +424,7 @@ export default function PrashnaView({ lang = 'en' }) {
           borderTop: '1px solid rgba(255,255,255,0.04)',
           paddingTop: '10px', lineHeight: 1.6
         }}>
-          🔮 <strong>Prashna Jyotish</strong>: The Prashna (question) chart is cast for the exact moment a question arises in the mind or is put to an astrologer. The Lagna and Moon placement at this moment reveal the answer. This chart reflects the cosmic moment you opened this page — a Prashna cannot be recast for the same question.
+          <strong>Prashna Jyotish</strong>: The Prashna (question) chart is cast for the exact moment a question arises in the mind or is put to an astrologer. The Lagna and Moon placement at this moment reveal the answer. This chart reflects the cosmic moment you opened this page — a Prashna cannot be recast for the same question.
         </div>
       </div>
 
