@@ -98,9 +98,11 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues, collec
   // Generic change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // For numeric fields: allow intermediate typing states (minus sign, trailing dot)
+    // We keep the raw string and let submit do final parsing
     setFormData(p => ({
       ...p,
-      [name]: ['lat', 'lon', 'timezoneOffset'].includes(name) ? (value === '' ? '' : parseFloat(value) || 0) : value
+      [name]: value
     }));
   };
 
@@ -202,19 +204,56 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues, collec
   };
 
   // Confirm selected coordinates
-  const handleConfirmLocation = () => {
+  const handleConfirmLocation = async () => {
     const { lat, lon, name } = tempCoords.current;
     
-    // Smart Timezone Approximation based on Longitude
-    // 15 degrees = 1 hour. Round to nearest 0.5 hours.
-    const calculatedOffset = Math.round((lon / 15) * 2) / 2;
+    // Try reverse geocode to get country code for better timezone estimation
+    let tz = Math.round((lon / 15) * 2) / 2; // solar fallback
+    let displayName = name || `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+    
+    try {
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=5`
+      );
+      if (resp.ok) {
+        const geo = await resp.json();
+        const cc = geo?.address?.country_code?.toLowerCase();
+        // Common country/region timezone offsets
+        const TZ_MAP = {
+          'in': 5.5, 'lk': 5.5, 'np': 5.75, 'bd': 6, 'pk': 5,
+          'cn': 8, 'jp': 9, 'kr': 9, 'sg': 8, 'my': 8, 'th': 7,
+          'id': 7, 'vn': 7, 'ph': 8, 'mm': 6.5, 'af': 4.5,
+          'ae': 4, 'sa': 3, 'iq': 3, 'ir': 3.5, 'om': 4,
+          'kw': 3, 'bh': 3, 'qa': 3, 'ye': 3,
+          'gb': 0, 'ie': 0, 'pt': 0, 'is': 0,
+          'fr': 1, 'de': 1, 'it': 1, 'es': 1, 'nl': 1, 'be': 1,
+          'pl': 1, 'cz': 1, 'at': 1, 'ch': 1, 'dk': 1, 'no': 1, 'se': 1,
+          'fi': 2, 'gr': 2, 'ro': 2, 'ua': 2, 'ee': 2, 'lv': 2, 'lt': 2,
+          'ru': 3, // Moscow (approximate)
+          'eg': 2, 'za': 2, 'ke': 3, 'et': 3,
+          'us': Math.round((lon / 15) * 2) / 2, // US uses lon-based
+          'ca': Math.round((lon / 15) * 2) / 2,
+          'au': lon > 140 ? 10 : lon > 128 ? 9.5 : 8,
+          'nz': 12,
+        };
+        if (cc && TZ_MAP[cc] !== undefined) {
+          tz = TZ_MAP[cc];
+        }
+        if (geo?.display_name) {
+          const parts = geo.display_name.split(',');
+          displayName = (parts[0] + (parts[1] ? ', ' + parts[1].trim() : '')).trim();
+        }
+      }
+    } catch (_) {
+      // Silently fall back to solar timezone
+    }
 
     setFormData(p => ({
       ...p,
-      lat,
-      lon,
-      cityPreset: name || `${lat.toFixed(2)}N, ${lon.toFixed(2)}E`,
-      timezoneOffset: calculatedOffset
+      lat: parseFloat(lat.toFixed(4)),
+      lon: parseFloat(lon.toFixed(4)),
+      cityPreset: displayName,
+      timezoneOffset: tz
     }));
     setShowMapModal(false);
   };

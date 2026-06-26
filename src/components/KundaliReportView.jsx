@@ -85,6 +85,39 @@ const NAKSHATRA_PERSONALITY = {
   Revati:'nurturing, completion, spiritual, endings and beginnings'
 };
 
+// ─── GOTRA by Nakshatra (Classical 8-Rishi / Saptarishi + Agastya system) ───
+// Each of the 27 Nakshatras is traditionally assigned to one of the Gotra Rishis.
+// This is the Nakshatra-based Gotra determination used in Jyotish for ritual purposes.
+const NAKSHATRA_GOTRA = {
+  'Ashwini':            { rishi: 'Kashyapa',   gotra: 'Kashyapa' },
+  'Bharani':            { rishi: 'Bhrigu',     gotra: 'Bhargava' },
+  'Krittika':           { rishi: 'Agastya',    gotra: 'Agastya' },
+  'Rohini':             { rishi: 'Gautama',    gotra: 'Gautama' },
+  'Mrigashira':         { rishi: 'Angiras',    gotra: 'Angirasa' },
+  'Ardra':              { rishi: 'Atri',       gotra: 'Atreya' },
+  'Punarvasu':          { rishi: 'Vashishtha', gotra: 'Vashishtha' },
+  'Pushya':             { rishi: 'Vishwamitra',gotra: 'Kaushika' },
+  'Ashlesha':           { rishi: 'Kashyapa',   gotra: 'Kashyapa' },
+  'Magha':              { rishi: 'Bhrigu',     gotra: 'Bhargava' },
+  'Purva Phalguni':     { rishi: 'Angiras',    gotra: 'Angirasa' },
+  'Uttara Phalguni':    { rishi: 'Agastya',    gotra: 'Agastya' },
+  'Hasta':              { rishi: 'Atri',       gotra: 'Atreya' },
+  'Chitra':             { rishi: 'Vashishtha', gotra: 'Vashishtha' },
+  'Swati':              { rishi: 'Vishwamitra',gotra: 'Kaushika' },
+  'Vishakha':           { rishi: 'Gautama',    gotra: 'Gautama' },
+  'Anuradha':           { rishi: 'Kashyapa',   gotra: 'Kashyapa' },
+  'Jyeshtha':           { rishi: 'Agastya',    gotra: 'Agastya' },
+  'Moola':              { rishi: 'Angiras',    gotra: 'Angirasa' },
+  'Purva Ashadha':      { rishi: 'Bhrigu',     gotra: 'Bhargava' },
+  'Uttara Ashadha':     { rishi: 'Vashishtha', gotra: 'Vashishtha' },
+  'Shravana':           { rishi: 'Atri',       gotra: 'Atreya' },
+  'Dhanishta':          { rishi: 'Vishwamitra',gotra: 'Kaushika' },
+  'Shatabhisha':        { rishi: 'Gautama',    gotra: 'Gautama' },
+  'Purva Bhadrapada':   { rishi: 'Kashyapa',   gotra: 'Kashyapa' },
+  'Uttara Bhadrapada':  { rishi: 'Atri',       gotra: 'Atreya' },
+  'Revati':             { rishi: 'Vashishtha', gotra: 'Vashishtha' }
+};
+
 // ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────
 
 function getHouse(lagnaIdx, planetIdx) {
@@ -234,6 +267,10 @@ export default function KundaliReportView({ birthData, params, extraProfile }) {
   const sunSign      = sun.rasi.name;
   const moonSign     = moon.rasi.name;
   const moonNak      = moon.nakshatra;
+
+  // ── Gotra derived from Janma Nakshatra (Moon's nakshatra) ──────────────────
+  const gotraInfo    = NAKSHATRA_GOTRA[moonNak.name] || { rishi: 'Kashyapa', gotra: 'Kashyapa' };
+
   const lagnaLord    = RASI_LORD[lagnaSign];
   const lagnaLordPl  = planets[lagnaLord];
   const lagnaLordHouse = lagnaLordPl ? getHouse(lagnaIdx, lagnaLordPl.rasi.index) : 1;
@@ -490,7 +527,7 @@ export default function KundaliReportView({ birthData, params, extraProfile }) {
       <div style={{
         background: 'linear-gradient(135deg, rgba(10,12,22,0.98), rgba(20,24,50,0.98))',
         border: '1px solid rgba(234,179,8,0.2)', borderRadius: '16px', padding: '24px',
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px'
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '20px'
       }}>
         <div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</div>
@@ -511,6 +548,20 @@ export default function KundaliReportView({ birthData, params, extraProfile }) {
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sun Sign</div>
           <div style={{ fontSize: '16px', fontWeight: 700, color: '#f97316' }}>{sun.rasi.symbol} {sunSign}</div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{sun.nakshatra.name} Nakshatra</div>
+        </div>
+        {/* ── GOTRA ── */}
+        <div style={{
+          background: 'rgba(234,179,8,0.05)',
+          borderRadius: '10px',
+          padding: '12px 14px',
+          border: '1px solid rgba(234,179,8,0.15)'
+        }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gotra</div>
+          <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--gold)' }}>{gotraInfo.gotra}</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '3px', lineHeight: 1.4 }}>
+            Rishi: {gotraInfo.rishi}<br/>
+            via {moonNak.name} Nakshatra
+          </div>
         </div>
         <div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Dasha</div>
@@ -572,6 +623,11 @@ export default function KundaliReportView({ birthData, params, extraProfile }) {
               <Row label="Lagna Lord" value={`${lagnaLord} placed in House ${lagnaLordHouse} (${HOUSE_SIGNIFICATION[lagnaLordHouse]}) — ${strengthLabel(planetStrengths[lagnaLord])}`} />
               <Row label="Moon Sign" value={`${moonSign} — Emotional nature: ${moonSign === 'Cancer' || moonSign === 'Pisces' || moonSign === 'Scorpio' ? 'deeply sensitive and intuitive' : moonSign === 'Leo' || moonSign === 'Sagittarius' || moonSign === 'Aries' ? 'bold, expressive and fiery' : moonSign === 'Taurus' || moonSign === 'Virgo' || moonSign === 'Capricorn' ? 'practical, grounded, reliable' : 'flexible, intellectual, communicative'}`} />
               <Row label="Janma Nakshatra" value={`${moonNak.name} (Pada ${moonNak.pada}) — Ruled by ${moonNak.lord}. Personality: ${NAKSHATRA_PERSONALITY[moonNak.name] || 'multifaceted and complex'}`} />
+              <Row
+                label="Gotra (Nakshatra)"
+                value={`${gotraInfo.gotra} Gotra — derived from ${moonNak.name} Nakshatra (Presiding Rishi: ${gotraInfo.rishi}). Note: Gotra is traditionally a lineage attribute passed through the paternal family. This Jyotish calculation uses the Nakshatra-Rishi system and serves as an indication for those whose family Gotra is unknown.`}
+                highlight
+              />
               <Row label="Retrograde Planets" value={retroPlanets.length ? retroPlanets.join(', ') + ' — internalised, karmic energy; past-life themes active' : 'None — straight forward planetary energy'} />
             </div>
 

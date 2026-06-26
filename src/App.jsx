@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { calculateBirthData, calculateBirthDataAsync } from './utils/astrology';
 import BirthForm from './components/BirthForm';
 import PlanetaryTable from './components/PlanetaryTable';
@@ -18,8 +18,22 @@ import SahamsView from './components/SahamsView';
 import PredictionsView from './components/PredictionsView';
 import PlanetaryStatesView from './components/PlanetaryStatesView';
 import KundaliReportView from './components/KundaliReportView';
-import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award, FileText } from 'lucide-react';
+import PrashnaView from './components/PrashnaView';
+import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award, FileText, Clock } from 'lucide-react';
 import { translations } from './utils/translations';
+
+// Gotra by Janma Nakshatra (Saptarishi-Rishi system)
+const NAKSHATRA_GOTRA_MAP = {
+  'Ashwini':'Kashyapa','Bharani':'Bhargava','Krittika':'Agastya',
+  'Rohini':'Gautama','Mrigashira':'Angirasa','Ardra':'Atreya',
+  'Punarvasu':'Vashishtha','Pushya':'Kaushika','Ashlesha':'Kashyapa',
+  'Magha':'Bhargava','Purva Phalguni':'Angirasa','Uttara Phalguni':'Agastya',
+  'Hasta':'Atreya','Chitra':'Vashishtha','Swati':'Kaushika',
+  'Vishakha':'Gautama','Anuradha':'Kashyapa','Jyeshtha':'Agastya',
+  'Moola':'Angirasa','Purva Ashadha':'Bhargava','Uttara Ashadha':'Vashishtha',
+  'Shravana':'Atreya','Dhanishta':'Kaushika','Shatabhisha':'Gautama',
+  'Purva Bhadrapada':'Kashyapa','Uttara Bhadrapada':'Atreya','Revati':'Vashishtha'
+};
 
 export default function App() {
   const [lang, setLang] = useState('en');
@@ -79,6 +93,7 @@ export default function App() {
 
   const tabs = [
     { id: 'basics', label: t('basics'), icon: <Compass size={18} /> },
+    { id: 'prashna', label: lang === 'en' ? 'Prashna' : 'प्रश्न', icon: <Clock size={18} /> },
     { id: 'kundali', label: lang === 'en' ? 'Kundali Report' : 'कुंडली रिपोर्ट', icon: <FileText size={18} /> },
     { id: 'details', label: t('details'), icon: <List size={18} /> },
     { id: 'vargas', label: t('charts'), icon: <Star size={18} /> },
@@ -223,40 +238,28 @@ export default function App() {
 
         {/* Tab Content */}
         {params === null ? (
-          /* Empty Initial State - Starry Sky Welcome Panel */
+          /* Empty Initial State - Welcome Panel with Prashna Chart */
           <div className="basics-grid" style={{ minHeight: '60vh' }}>
             <div className="basics-left">
               <BirthForm onSubmit={handleFormSubmit} lang={lang} collectExtra={true} />
             </div>
-            <div className="basics-right" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="basics-right" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <PrashnaView lang={lang} />
               <div style={{
-                textAlign: 'center',
-                padding: '40px',
-                borderRadius: '16px',
+                textAlign: 'center', padding: '24px', borderRadius: '16px',
                 background: 'linear-gradient(135deg, rgba(10,12,22,0.95), rgba(16,18,34,0.95))',
-                border: '1px solid rgba(234, 179, 8, 0.15)',
-                maxWidth: '500px',
+                border: '1px solid rgba(234,179,8,0.15)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '16px'
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px'
               }}>
-                <div style={{ fontSize: '48px', animation: 'pulse 3s infinite' }}>🕉️</div>
-                <h2 style={{ color: 'var(--gold)', margin: 0, fontSize: '20px', fontWeight: 800 }}>
+                <div style={{ fontSize: '40px', animation: 'pulse 3s infinite' }}>🕉️</div>
+                <h2 style={{ color: 'var(--gold)', margin: 0, fontSize: '18px', fontWeight: 800 }}>
                   {t('welcome_title')}
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: 1.6, margin: 0 }}>
                   {t('welcome_desc')}
                 </p>
-                <div style={{
-                  fontSize: '11px',
-                  color: 'rgba(255,255,255,0.25)',
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
-                  paddingTop: '12px',
-                  width: '100%',
-                  fontFamily: 'JetBrains Mono'
-                }}>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', width: '100%', fontFamily: 'JetBrains Mono' }}>
                   Lahiri Ayanamsa • Swiss Ephemeris API • Ashtakoota Guna Milan
                 </div>
               </div>
@@ -290,6 +293,13 @@ export default function App() {
                         <span className="profile-val cyan">{birthData.planets['Moon'].rasi.symbol} {lang === 'en' ? birthData.planets['Moon'].rasi.name : birthData.planets['Moon'].rasi.hindi}</span>
                         <span className="profile-key">{lang === 'en' ? 'Lagna (Asc):' : 'लग्न:'}</span>
                         <span className="profile-val gold">{birthData.planets['Lagna'].rasi.symbol} {lang === 'en' ? birthData.planets['Lagna'].rasi.name : birthData.planets['Lagna'].rasi.hindi} {Math.floor(birthData.planets['Lagna'].rasi.deg)}°</span>
+                        <span className="profile-key">{lang === 'en' ? 'Janma Nakshatra:' : 'जन्म नक्षत्र:'}</span>
+                        <span className="profile-val" style={{ color: '#c084fc' }}>{birthData.planets['Moon'].nakshatra.name} (Pada {birthData.planets['Moon'].nakshatra.pada})</span>
+                        <span className="profile-key" style={{ color: 'var(--gold)', fontWeight: 700 }}>{lang === 'en' ? 'Gotra:' : 'गोत्र:'}</span>
+                        <span className="profile-val gold" style={{ fontWeight: 700 }}>
+                          {NAKSHATRA_GOTRA_MAP[birthData.planets['Moon'].nakshatra.name] || 'Kashyapa'}
+                          <span style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '4px' }}>(Nakshatra-based)</span>
+                        </span>
                       </div>
                     </div>
                   )}
@@ -317,6 +327,8 @@ export default function App() {
                       </div>
                       <PlanetaryTable planets={birthData.planets} />
                       <PlanetaryStatesView planets={birthData.planets} lang={lang} />
+                      {/* Prashna chart always shown on basics tab */}
+                      <PrashnaView lang={lang} />
                     </>
                   ) : null}
                 </div>
@@ -325,7 +337,12 @@ export default function App() {
 
             {/* ── OTHER TABS (With loading state handled gracefully) ── */}
             {currentTab !== 'basics' && (
-              loading ? (
+              currentTab === 'prashna' ? (
+                /* Prashna tab doesn't need birthData - always show */
+                <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+                  <PrashnaView lang={lang} />
+                </div>
+              ) : loading ? (
                 <div className="loading-container" style={{ padding: '60px 0' }}>
                   <div className="spinner" />
                   <div className="loading-text" style={{ fontSize: '14px', color: 'var(--gold)', marginTop: '12px' }}>
