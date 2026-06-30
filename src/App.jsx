@@ -19,7 +19,7 @@ import PredictionsView from './components/PredictionsView';
 import PlanetaryStatesView from './components/PlanetaryStatesView';
 import KundaliReportView from './components/KundaliReportView';
 import PrashnaView from './components/PrashnaView';
-import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award, FileText, Clock } from 'lucide-react';
+import { Compass, Star, Zap, List, Heart, Menu, X, Activity, Shield, Eye, Sun, Moon, Link, Map, Globe, ChevronLeft, ChevronRight, Award, FileText, Clock, MoreHorizontal } from 'lucide-react';
 import { translations } from './utils/translations';
 
 // Gotra by Janma Nakshatra (Saptarishi-Rishi system)
@@ -44,9 +44,34 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [extraProfile, setExtraProfile] = useState({});
+  const [birthHouseOffset, setBirthHouseOffset] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   const navRef = useRef(null);
+  const moreMenuRef = useRef(null);
   const t = (key) => translations[lang]?.[key] || key;
+
+  // Track window size for responsive slice
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Click outside to close the More dropdown
+  useEffect(() => {
+    const handleClose = (e) => {
+      // Check if clicked target is not within the More button as well
+      const moreBtn = document.querySelector('.more-tab-btn');
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target) && (!moreBtn || !moreBtn.contains(e.target))) {
+        setIsMoreOpen(false);
+      }
+    };
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
 
   useEffect(() => {
     if (!params) {
@@ -78,6 +103,18 @@ export default function App() {
       active = false;
     };
   }, [params]);
+
+  useEffect(() => {
+    setBirthHouseOffset(0);
+  }, [params]);
+
+  // Scroll active tab into view horizontally
+  useEffect(() => {
+    const activeEl = document.querySelector('.nav-tab.active');
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [currentTab]);
 
   const handleFormSubmit = (newParams, newExtra) => {
     setParams(newParams);
@@ -112,12 +149,110 @@ export default function App() {
     { id: 'compatibility', label: t('compatibility'), icon: <Heart size={18} /> }
   ];
 
+  const isMobile = windowWidth <= 768;
+  const visibleTabs = isMobile ? tabs.slice(0, 3) : tabs;
+  const moreTabs = isMobile ? tabs.slice(3) : [];
+  const isMoreActive = isMobile && moreTabs.some(t => t.id === currentTab);
+
   return (
     <div className="app-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Mobile Sidebar Drawer Overlay */}
+      {isMobile && isMenuOpen && (
+        <div className="sidebar-backdrop" onClick={() => setIsMenuOpen(false)} />
+      )}
+
+      {/* Mobile Sidebar Drawer */}
+      {isMobile && (
+        <div className={`sidebar-drawer ${isMenuOpen ? 'open' : ''}`}>
+          {/* Close button that overlaps right border */}
+          <button className="sidebar-close-trigger" onClick={() => setIsMenuOpen(false)}>
+            <ChevronLeft size={16} />
+          </button>
+
+          {/* Profile Header */}
+          <div className="sidebar-profile">
+            <div className="sidebar-avatar">
+              {params?.name ? params.name[0].toUpperCase() : '🕉️'}
+            </div>
+            <div className="sidebar-profile-info">
+              <div className="sidebar-profile-name">
+                {params?.name ? params.name : (lang === 'hi' ? 'खगोल यात्री' : 'Astro Traveler')}
+              </div>
+              <div className="sidebar-profile-sub">
+                {params?.city ? params.city : (lang === 'hi' ? 'जगतनाथ धाम' : 'Jagannath Dham')}
+              </div>
+            </div>
+          </div>
+
+          {/* List of scrollable options */}
+          <div className="sidebar-menu-list">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setCurrentTab(tab.id);
+                  setIsMenuOpen(false);
+                }}
+                className={`sidebar-item ${currentTab === tab.id ? 'active' : ''}`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Sidebar Footer with Reset Lagna or Close menu option */}
+          <div className="sidebar-footer">
+            {birthHouseOffset !== 0 ? (
+              <button
+                className="sidebar-footer-btn"
+                onClick={() => {
+                  setBirthHouseOffset(0);
+                  setIsMenuOpen(false);
+                }}
+              >
+                🔄 {lang === 'hi' ? 'मूल लग्न बहाल करें' : 'Reset Lagna'}
+              </button>
+            ) : (
+              <button
+                className="sidebar-footer-btn"
+                style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderColor: 'rgba(255,255,255,0.1)' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🚪 {lang === 'hi' ? 'मेनू बंद करें' : 'Close Menu'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="app-header">
         <div className="header-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="header-brand">
+            {isMobile && (
+              <button
+                onClick={() => setIsMenuOpen(o => !o)}
+                className="hamburger-menu-btn"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--gold)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px',
+                  marginRight: '8px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(245,158,11,0.15)'
+                }}
+                aria-label="Toggle navigation menu"
+              >
+                <Menu size={20} />
+              </button>
+            )}
             <div className="header-logo">🙏</div>
             <div>
               <div className="header-title-line1">JAI JAGANNATH</div>
@@ -194,17 +329,130 @@ export default function App() {
             />
           )}
 
-          <nav ref={navRef} className={`nav-tabs ${isMenuOpen ? 'menu-open' : ''}`} style={{ flex: 1 }}>
-            {tabs.map(tab => (
+          <nav ref={navRef} className={`nav-tabs ${isMenuOpen ? 'menu-open' : ''}`} style={{ flex: 1, position: 'relative' }}>
+            {visibleTabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => { setCurrentTab(tab.id); setIsMenuOpen(false); }}
+                onClick={() => { setCurrentTab(tab.id); setIsMenuOpen(false); setIsMoreOpen(false); }}
                 className={`nav-tab ${currentTab === tab.id ? 'active' : ''}`}
               >
                 {tab.icon}
                 {tab.label}
               </button>
             ))}
+
+            {isMobile && (
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <button
+                  onClick={() => setIsMoreOpen(o => !o)}
+                  className={`nav-tab more-tab-btn ${isMoreActive ? 'active' : ''}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <MoreHorizontal size={16} />
+                  <span>{lang === 'hi' ? 'अधिक' : 'More'}</span>
+                </button>
+
+                {isMoreOpen && (
+                  <div
+                    ref={moreMenuRef}
+                    className="more-dropdown-container"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      width: '220px',
+                      background: 'rgba(8, 10, 24, 0.98)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(245, 158, 11, 0.2)',
+                      borderRadius: '12px',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(245,158,11,0.1)',
+                      zIndex: 1000,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      animation: 'fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    {/* Scrollable list of items */}
+                    <div
+                      className="more-dropdown-scrollable"
+                      onScroll={(e) => {
+                        const { scrollTop, scrollHeight, clientHeight } = e.target;
+                        if (scrollHeight - scrollTop - clientHeight < 12) {
+                          setShowScrollIndicator(false);
+                        } else {
+                          setShowScrollIndicator(true);
+                        }
+                      }}
+                      style={{
+                        maxHeight: '220px',
+                        overflowY: 'auto',
+                        padding: '6px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px'
+                      }}
+                    >
+                      {moreTabs.map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            setCurrentTab(tab.id);
+                            setIsMoreOpen(false);
+                          }}
+                          className={`nav-tab-item ${currentTab === tab.id ? 'active' : ''}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            width: '100%',
+                            padding: '10px 14px',
+                            background: currentTab === tab.id ? 'rgba(245,158,11,0.08)' : 'transparent',
+                            border: 'none',
+                            borderLeft: currentTab === tab.id ? '3px solid var(--gold)' : '3px solid transparent',
+                            borderRadius: currentTab === tab.id ? '0 8px 8px 0' : '8px',
+                            color: currentTab === tab.id ? 'var(--gold)' : 'var(--text-secondary)',
+                            fontSize: '13px',
+                            fontWeight: currentTab === tab.id ? 700 : 500,
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {tab.icon}
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Fading bottom indicator overlay */}
+                    {showScrollIndicator && (
+                      <div
+                        className="more-dropdown-fade-indicator"
+                        style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '34px',
+                          background: 'linear-gradient(to top, rgba(8, 10, 24, 0.98) 30%, transparent)',
+                          pointerEvents: 'none',
+                          borderBottomLeftRadius: '12px',
+                          borderBottomRightRadius: '12px',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          paddingBottom: '4px'
+                        }}
+                      >
+                        <span style={{ fontSize: '9px', color: 'rgba(245, 158, 11, 0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          {lang === 'hi' ? 'नीचे और विकल्प हैं ▼' : 'More options below ▼'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
 
           {/* Scroll Right Arrow with Pulsing Hint */}
@@ -318,14 +566,14 @@ export default function App() {
                       <div className="basics-charts-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
                         <div>
                           <div className="chart-label">{t('rasi')}</div>
-                          <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} />
+                          <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} houseOffset={birthHouseOffset} onHouseOffsetChange={setBirthHouseOffset} />
                         </div>
                         <div>
                           <div className="chart-label">{t('navamsa')}</div>
-                          <VedicChart planets={birthData.planets} defaultVarga={9} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} />
+                          <VedicChart planets={birthData.planets} defaultVarga={9} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} houseOffset={birthHouseOffset} onHouseOffsetChange={setBirthHouseOffset} />
                         </div>
                       </div>
-                      <PlanetaryTable planets={birthData.planets} />
+                      <PlanetaryTable planets={birthData.planets} lang={lang} />
                       <PlanetaryStatesView planets={birthData.planets} lang={lang} />
                       {/* Prashna chart always shown on basics tab */}
                       <PrashnaView lang={lang} />
@@ -354,8 +602,8 @@ export default function App() {
                   {/* ── VARGAS TAB ── */}
                   {currentTab === 'vargas' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', width: '100%' }}>
-                      <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} showAllVargas={true} />
-                      <PlanetaryTable planets={birthData.planets} />
+                      <VedicChart planets={birthData.planets} defaultVarga={1} divisionalCharts={birthData.raw?.divisional_charts} lang={lang} showAllVargas={true} houseOffset={birthHouseOffset} onHouseOffsetChange={setBirthHouseOffset} />
+                      <PlanetaryTable planets={birthData.planets} lang={lang} />
                     </div>
                   )}
 
@@ -379,6 +627,7 @@ export default function App() {
                       <DashaView
                         moonLong={birthData.planets['Moon'].siderealLong}
                         birthDate={birthData.utcDate}
+                        lang={lang}
                       />
                     </div>
                   )}
@@ -393,14 +642,14 @@ export default function App() {
                   {/* ── DETAILS TAB ── */}
                   {currentTab === 'details' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', width: '100%' }}>
-                      <PlanetaryTable planets={birthData.planets} />
+                      <PlanetaryTable planets={birthData.planets} lang={lang} />
                     </div>
                   )}
 
                   {/* ── SATURN TAB ── */}
                   {currentTab === 'saturn' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <SaturnTransitView saturnTransits={birthData.raw?.saturn_transits} />
+                      <SaturnTransitView saturnTransits={birthData.raw?.saturn_transits} lang={lang} />
                     </div>
                   )}
 

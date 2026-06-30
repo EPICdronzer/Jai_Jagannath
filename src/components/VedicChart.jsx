@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getVargaChartData, getVargaChartDataFromAPI, calculateVargaSign, ZODIAC_SIGNS } from '../utils/astrology';
 
 const VARGA_DETAILS = [
@@ -66,10 +66,100 @@ const VARGA_D1_TO_D12 = [
   { value: 12, label: 'Dwadasamsa (D-12)' }
 ];
 
-export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts, lang = 'en', showAllVargas = false }) {
+export default function VedicChart({
+  planets,
+  defaultVarga = 1,
+  divisionalCharts,
+  lang = 'en',
+  showAllVargas = false,
+  houseOffset: externalHouseOffset,
+  onHouseOffsetChange
+}) {
   const [chartStyle, setChartStyle] = useState('south');
   const [activeVarga, setActiveVarga] = useState(defaultVarga);
   const [viewMode, setViewMode] = useState('single'); // 'single' or 'grid'
+
+  const [internalHouseOffset, setInternalHouseOffset] = useState(0);
+  const [menuState, setMenuState] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    houseIndex: null,
+    vargaNum: null
+  });
+
+  const houseOffset = externalHouseOffset !== undefined ? externalHouseOffset : internalHouseOffset;
+  const setHouseOffset = (val) => {
+    if (onHouseOffsetChange) {
+      onHouseOffsetChange(val);
+    } else {
+      setInternalHouseOffset(val);
+    }
+  };
+
+  // Close context menu on click anywhere
+  useEffect(() => {
+    const handleClose = () => {
+      setMenuState(prev => prev.visible ? { ...prev, visible: false } : prev);
+    };
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
+
+  const handleHouseClick = (e, houseIndex, vargaNum) => {
+    if (chartStyle !== 'north') return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Bounds checking to avoid menu overflow
+    let clickX = e.clientX;
+    let clickY = e.clientY;
+    const menuWidth = 220;
+    const menuHeight = 100;
+
+    if (clickX + menuWidth > window.innerWidth) {
+      clickX = window.innerWidth - menuWidth - 10;
+    }
+    if (clickY + menuHeight > window.innerHeight) {
+      clickY = window.innerHeight - menuHeight - 10;
+    }
+    if (clickX < 10) clickX = 10;
+    if (clickY < 10) clickY = 10;
+
+    setMenuState({
+      visible: true,
+      x: clickX,
+      y: clickY,
+      houseIndex,
+      vargaNum
+    });
+  };
+
+  const customStyles = `
+    .north-indian-house {
+      transition: fill 0.2s ease, opacity 0.2s ease;
+    }
+    .north-indian-house:hover {
+      fill: rgba(234, 179, 8, 0.08) !important;
+    }
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      background: none;
+      color: var(--text-primary, #ffffff);
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .context-menu-item:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--gold, #eab308) !important;
+    }
+  `;
 
   if (!planets) return null;
 
@@ -218,7 +308,7 @@ export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts
       ? calculateVargaSign(planets['Lagna'].siderealLong, vargaNum)
       : 0;
     
-    const houseSigns = Array.from({ length: 12 }, (_, i) => (lagnaSignIndex + i) % 12);
+    const houseSigns = Array.from({ length: 12 }, (_, i) => (lagnaSignIndex + houseOffset + i) % 12);
 
     const compartments = [
       { id: 1,  points: `${W/2},${H/2} ${W/4},${H/4} ${W/2},0 ${3*W/4},${H/4}`,                   labelX: W/2,      labelY: H/4-14,       textX: W/2,      textY: H/4+16, sign: houseSigns[0] },
@@ -248,19 +338,31 @@ export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts
           {compartments.map(comp => {
             const planetsInSign = data[comp.sign] || [];
             return (
-              <g key={comp.id}>
+              <g
+                key={comp.id}
+                onClick={(e) => handleHouseClick(e, comp.id - 1, vargaNum)}
+                onContextMenu={(e) => handleHouseClick(e, comp.id - 1, vargaNum)}
+                style={{ cursor: 'pointer' }}
+              >
                 <polygon
+                  className="north-indian-house"
                   points={comp.points}
                   style={{
                     fill: comp.id === 1 ? 'rgba(234,179,8,0.03)' : '#070913',
                     stroke: 'rgba(255,255,255,0.08)',
-                    strokeWidth: '1.5'
+                    strokeWidth: '1.5',
+                    transition: 'fill 0.2s ease'
                   }}
                 />
-                <text x={comp.labelX} y={comp.labelY} textAnchor="middle" style={{ fontSize: '11px', fill: 'var(--text-muted)', fontWeight: 600 }}>
+                <text
+                  x={comp.labelX}
+                  y={comp.labelY}
+                  textAnchor="middle"
+                  style={{ fontSize: '11px', fill: 'var(--text-muted)', fontWeight: 600, pointerEvents: 'none' }}
+                >
                   {comp.sign + 1}
                 </text>
-                <g transform={`translate(${comp.textX}, ${comp.textY})`}>
+                <g transform={`translate(${comp.textX}, ${comp.textY})`} style={{ pointerEvents: 'none' }}>
                   {planetsInSign.map((p, pIdx) => {
                     const isLagna = p.isLagna || p.name === 'Ascendant' || p.name === 'Lagna';
                     const displayCode = getPlanetCode(p.name, p.isRetrograde && !isLagna);
@@ -301,11 +403,144 @@ export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts
 
   if (showAllVargas) {
     return (
-      <div className="card chart-card" style={{ width: '100%' }}>
+      <>
+        <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+        <div className="card chart-card" style={{ width: '100%' }}>
+          <div className="chart-header-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+            <h3 className="card-title text-gold" style={{ margin: 0, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>{lang === 'en' ? 'Divisional Charts (D-1 to D-12)' : 'वर्गीय कुंडली चक्र (D-1 से D-12)'}</span>
+            </h3>
+            <div className="btn-toggle-group">
+              <button onClick={() => setChartStyle('south')} className={`btn-toggle ${chartStyle === 'south' ? 'active' : ''}`}>
+                {t.btn_south}
+              </button>
+              <button onClick={() => setChartStyle('north')} className={`btn-toggle ${chartStyle === 'north' ? 'active' : ''}`}>
+                {t.btn_north}
+              </button>
+            </div>
+          </div>
+
+          {/* D-1 to D-12 Vargas Grid - stacks vertically on mobile */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
+            padding: '16px 0',
+            width: '100%'
+          }}>
+            {VARGA_D1_TO_D12.map((vg) => (
+              <div
+                key={vg.value}
+                style={{
+                  background: 'rgba(255,255,255,0.01)',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                  {lang === 'hi' && vg.label.includes('Rasi') ? 'राशि चक्र (D-1)' :
+                   lang === 'hi' && vg.label.includes('Hora') ? 'होरा (D-2)' :
+                   lang === 'hi' && vg.label.includes('Drekkana') ? 'द्रेष्काण (D-3)' :
+                   lang === 'hi' && vg.label.includes('Chaturthamsa') ? 'चतुर्थांश (D-4)' :
+                   lang === 'hi' && vg.label.includes('Saptamsa') ? 'सप्तांश (D-7)' :
+                   lang === 'hi' && vg.label.includes('Navamsa') ? 'नवांश (D-9)' :
+                   lang === 'hi' && vg.label.includes('Dasamsa') ? 'दशांश (D-10)' :
+                   lang === 'hi' && vg.label.includes('Dwadasamsa') ? 'द्वादशांश (D-12)' : vg.label}
+                </div>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  {chartStyle === 'south' ? renderSouthIndianChart(vg.value, 'small') : renderNorthIndianChart(vg.value, 'small')}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="chart-footer-info" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '11px', marginTop: '12px', borderTop: '1px solid var(--border-subtle)', paddingTop: '8px' }}>
+            <span>{t.ayanamsa_label}</span>
+            <span>{t.combust_info}</span>
+          </div>
+        </div>
+
+        {/* Render context menu */}
+        {menuState.visible && (
+          <div style={{
+            position: 'fixed',
+            left: `${menuState.x}px`,
+            top: `${menuState.y}px`,
+            background: 'rgba(15, 18, 36, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+            padding: '6px 0',
+            minWidth: '220px',
+            zIndex: 99999,
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+          }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newOffset = (houseOffset + menuState.houseIndex) % 12;
+                setHouseOffset(newOffset);
+                setMenuState({ visible: false, x: 0, y: 0, houseIndex: null, vargaNum: null });
+              }}
+              className="context-menu-item"
+            >
+              <span style={{ marginRight: '8px' }}>🔄</span>
+              {lang === 'hi' ? 'इस भाव से कुंडली दिखाएं' : 'Show chart from this house'}
+            </button>
+            {houseOffset !== 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHouseOffset(0);
+                  setMenuState({ visible: false, x: 0, y: 0, houseIndex: null, vargaNum: null });
+                }}
+                style={{
+                  color: 'var(--gold, #eab308)',
+                  borderTop: '1px solid rgba(255,255,255,0.06)'
+                }}
+                className="context-menu-item"
+              >
+                <span style={{ marginRight: '8px' }}>⏮️</span>
+                {lang === 'hi' ? 'मूल लग्न पर वापस जाएं' : 'Reset to Lagna'}
+              </button>
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+      <div className="card chart-card">
         <div className="chart-header-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-          <h3 className="card-title text-gold" style={{ margin: 0, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>{lang === 'en' ? 'Divisional Charts (D-1 to D-12)' : 'वर्गीय कुंडली चक्र (D-1 से D-12)'}</span>
-          </h3>
+          
+          {/* Toggle Grid vs Single */}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => setViewMode('single')}
+              className={`btn-toggle ${viewMode === 'single' ? 'active' : ''}`}
+              style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px' }}
+            >
+              {t.single_btn}
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`btn-toggle ${viewMode === 'grid' ? 'active' : ''}`}
+              style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px' }}
+            >
+              {t.grid_btn}
+            </button>
+          </div>
+
+          {/* Style selector */}
           <div className="btn-toggle-group">
             <button onClick={() => setChartStyle('south')} className={`btn-toggle ${chartStyle === 'south' ? 'active' : ''}`}>
               {t.btn_south}
@@ -314,144 +549,113 @@ export default function VedicChart({ planets, defaultVarga = 1, divisionalCharts
               {t.btn_north}
             </button>
           </div>
+
+          {/* Single Varga Select dropdown */}
+          {viewMode === 'single' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="select-label" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t.varga_label}</span>
+              <select
+                value={activeVarga}
+                onChange={e => setActiveVarga(parseInt(e.target.value))}
+                className="styled-select"
+                style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12px' }}
+              >
+                {VARGA_DETAILS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
-        {/* D-1 to D-12 Vargas Grid - stacks vertically on mobile */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px',
-          padding: '16px 0',
-          width: '100%'
-        }}>
-          {VARGA_D1_TO_D12.map((vg) => (
-            <div
-              key={vg.value}
-              style={{
-                background: 'rgba(255,255,255,0.01)',
-                border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: '12px',
-                padding: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-              }}
-            >
-              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                {lang === 'hi' && vg.label.includes('Rasi') ? 'राशि चक्र (D-1)' :
-                 lang === 'hi' && vg.label.includes('Hora') ? 'होरा (D-2)' :
-                 lang === 'hi' && vg.label.includes('Drekkana') ? 'द्रेष्काण (D-3)' :
-                 lang === 'hi' && vg.label.includes('Chaturthamsa') ? 'चतुर्थांश (D-4)' :
-                 lang === 'hi' && vg.label.includes('Saptamsa') ? 'सप्तांश (D-7)' :
-                 lang === 'hi' && vg.label.includes('Navamsa') ? 'नवांश (D-9)' :
-                 lang === 'hi' && vg.label.includes('Dasamsa') ? 'दशांश (D-10)' :
-                 lang === 'hi' && vg.label.includes('Dwadasamsa') ? 'द्वादशांश (D-12)' : vg.label}
+        {/* Viewport */}
+        {viewMode === 'single' ? (
+          <div className="chart-viewport" style={{ padding: '20px 0', minHeight: '380px' }}>
+            {chartStyle === 'south' ? renderSouthIndianChart(activeVarga) : renderNorthIndianChart(activeVarga)}
+          </div>
+        ) : (
+          /* 12 Vargas Grid - JHora Layout */
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '16px',
+            padding: '16px 0'
+          }}>
+            {VARGA_GRID_LIST.map((vg) => (
+              <div
+                key={vg.value}
+                style={{
+                  background: 'rgba(255,255,255,0.01)',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                  {vg.label}
+                </div>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  {chartStyle === 'south' ? renderSouthIndianChart(vg.value, 'small') : renderNorthIndianChart(vg.value, 'small')}
+                </div>
               </div>
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                {chartStyle === 'south' ? renderSouthIndianChart(vg.value, 'small') : renderNorthIndianChart(vg.value, 'small')}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="chart-footer-info" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '11px', marginTop: '12px', borderTop: '1px solid var(--border-subtle)', paddingTop: '8px' }}>
           <span>{t.ayanamsa_label}</span>
           <span>{t.combust_info}</span>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="card chart-card">
-      <div className="chart-header-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-        
-        {/* Toggle Grid vs Single */}
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <button
-            onClick={() => setViewMode('single')}
-            className={`btn-toggle ${viewMode === 'single' ? 'active' : ''}`}
-            style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px' }}
-          >
-            {t.single_btn}
-          </button>
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`btn-toggle ${viewMode === 'grid' ? 'active' : ''}`}
-            style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px' }}
-          >
-            {t.grid_btn}
-          </button>
-        </div>
-
-        {/* Style selector */}
-        <div className="btn-toggle-group">
-          <button onClick={() => setChartStyle('south')} className={`btn-toggle ${chartStyle === 'south' ? 'active' : ''}`}>
-            {t.btn_south}
-          </button>
-          <button onClick={() => setChartStyle('north')} className={`btn-toggle ${chartStyle === 'north' ? 'active' : ''}`}>
-            {t.btn_north}
-          </button>
-        </div>
-
-        {/* Single Varga Select dropdown */}
-        {viewMode === 'single' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="select-label" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t.varga_label}</span>
-            <select
-              value={activeVarga}
-              onChange={e => setActiveVarga(parseInt(e.target.value))}
-              className="styled-select"
-              style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12px' }}
-            >
-              {VARGA_DETAILS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
-            </select>
-          </div>
-        )}
-      </div>
-
-      {/* Viewport */}
-      {viewMode === 'single' ? (
-        <div className="chart-viewport" style={{ padding: '20px 0', minHeight: '380px' }}>
-          {chartStyle === 'south' ? renderSouthIndianChart(activeVarga) : renderNorthIndianChart(activeVarga)}
-        </div>
-      ) : (
-        /* 12 Vargas Grid - JHora Layout */
+      {/* Render context menu */}
+      {menuState.visible && (
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '16px',
-          padding: '16px 0'
+          position: 'fixed',
+          left: `${menuState.x}px`,
+          top: `${menuState.y}px`,
+          background: 'rgba(15, 18, 36, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '10px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+          padding: '6px 0',
+          minWidth: '220px',
+          zIndex: 99999,
+          fontFamily: 'system-ui, -apple-system, sans-serif',
         }}>
-          {VARGA_GRID_LIST.map((vg) => (
-            <div
-              key={vg.value}
-              style={{
-                background: 'rgba(255,255,255,0.01)',
-                border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: '10px',
-                padding: '10px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px'
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newOffset = (houseOffset + menuState.houseIndex) % 12;
+              setHouseOffset(newOffset);
+              setMenuState({ visible: false, x: 0, y: 0, houseIndex: null, vargaNum: null });
+            }}
+            className="context-menu-item"
+          >
+            <span style={{ marginRight: '8px' }}>🔄</span>
+            {lang === 'hi' ? 'इस भाव से कुंडली दिखाएं' : 'Show chart from this house'}
+          </button>
+          {houseOffset !== 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setHouseOffset(0);
+                setMenuState({ visible: false, x: 0, y: 0, houseIndex: null, vargaNum: null });
               }}
+              style={{
+                color: 'var(--gold, #eab308)',
+                borderTop: '1px solid rgba(255,255,255,0.06)'
+              }}
+              className="context-menu-item"
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
-                {vg.label}
-              </div>
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                {chartStyle === 'south' ? renderSouthIndianChart(vg.value, 'small') : renderNorthIndianChart(vg.value, 'small')}
-              </div>
-            </div>
-          ))}
+              <span style={{ marginRight: '8px' }}>⏮️</span>
+              {lang === 'hi' ? 'मूल लग्न पर वापस जाएं' : 'Reset to Lagna'}
+            </button>
+          )}
         </div>
       )}
-
-      <div className="chart-footer-info" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '11px', marginTop: '12px', borderTop: '1px solid var(--border-subtle)', paddingTop: '8px' }}>
-        <span>{t.ayanamsa_label}</span>
-        <span>{t.combust_info}</span>
-      </div>
-    </div>
+    </>
   );
 }

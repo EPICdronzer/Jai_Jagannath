@@ -320,10 +320,10 @@ export default function BirthForm({ onSubmit, lang = 'en', defaultValues, collec
           {/* Gender */}
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '13px' }}>⚧</span> {t('gender') || 'Gender'}
+              <span style={{ fontSize: '13px' }}>⚧</span> {t('gender')}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {[['male','♂ Male'],['female','♀ Female'],['other','⊕ Other']].map(([val, lbl]) => (
+              {[['male', `♂ ${t('male')}`], ['female', `♀ ${t('female')}`], ['other', `⊕ ${t('other')}`]].map(([val, lbl]) => (
                 <button
                   key={val}
                   type="button"

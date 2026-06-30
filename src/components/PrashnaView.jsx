@@ -3,6 +3,7 @@ import { calculateBirthDataAsync } from '../utils/astrology';
 import { PRESET_CITIES } from '../utils/cities';
 import VedicChart from './VedicChart';
 import { Clock, MapPin, RefreshCw, Map, Search, X, Check, Compass, Globe } from 'lucide-react';
+import { translations } from '../utils/translations';
 
 // Default location: New Delhi
 const DEFAULT_LOCATION = {
@@ -42,6 +43,41 @@ function PanchangRow({ label, value }) {
 }
 
 export default function PrashnaView({ lang = 'en' }) {
+  const t = (key) => translations[lang]?.[key] || key;
+
+  const translatePlanet = (name) => {
+    const dict = translations[lang]?.planets;
+    return dict?.[name] || name;
+  };
+  const translateZodiac = (name) => {
+    const dict = translations[lang]?.zodiacs;
+    return dict?.[name] || name;
+  };
+  const translateNakshatra = (name) => {
+    const dict = translations[lang]?.nakshatras;
+    return dict?.[name] || name;
+  };
+  const translateWeekday = (name) => {
+    const dict = translations[lang]?.weekdays;
+    return dict?.[name] || name;
+  };
+  const translatePaksha = (name) => {
+    const dict = translations[lang]?.pakshas;
+    return dict?.[name] || name;
+  };
+  const translateTithi = (name) => {
+    const dict = translations[lang]?.tithis;
+    return dict?.[name] || name;
+  };
+  const translateYoga = (name) => {
+    const dict = translations[lang]?.yoga_names;
+    return dict?.[name] || name;
+  };
+  const translateKarana = (name) => {
+    const dict = translations[lang]?.karana_names;
+    return dict?.[name] || name;
+  };
+
   // ── Capture the ABSOLUTE moment ONCE on mount — never changes until
   //    browser refresh. Stored as epoch ms (UTC-based), NOT as local
   //    wall-clock digits, so it's independent of any timezone choice. ──
@@ -192,7 +228,7 @@ export default function PrashnaView({ lang = 'en' }) {
   const { dateStr: displayDateStr, timeStr: displayTimeStr } =
     getLocalDateTimeAt(frozenInstant, location.timezone);
   const frozenDateStr = new Date(`${displayDateStr}T${displayTimeStr}`)
-    .toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    .toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const frozenTimeStr = displayTimeStr;
   const tzLabel = `UTC${location.timezone >= 0 ? '+' : ''}${location.timezone}`;
 
@@ -226,10 +262,10 @@ export default function PrashnaView({ lang = 'en' }) {
           </div>
           <div>
             <div style={{ fontWeight: 800, color: '#06b6d4', fontSize: '14px' }}>
-               Prashna Kundali ( Current Moment Chart )
+               {t('prashna_title')}
             </div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Moment frozen at page load • Location changeable below
+              {t('prashna_moment_frozen')}
             </div>
           </div>
         </div>
@@ -245,7 +281,7 @@ export default function PrashnaView({ lang = 'en' }) {
         }}>
           {pad(clockDisplay.getHours())}:{pad(clockDisplay.getMinutes())}:{pad(clockDisplay.getSeconds())}
           <div style={{ fontSize: '9px', color: 'rgba(6,182,212,0.5)', fontWeight: 400, textAlign: 'center', letterSpacing: '0.02em' }}>
-            LIVE CLOCK
+            {t('live_clock')}
           </div>
         </div>
       </div>
@@ -261,19 +297,19 @@ export default function PrashnaView({ lang = 'en' }) {
           display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> Chart Calculated For</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> {t('chart_calc_for')}</div>
             <div style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#06b6d4', fontWeight: 700 }}>
               {frozenDateStr}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> Prashna Time (Frozen)</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}> {t('prashna_time_frozen')}</div>
             <div style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'var(--gold)', fontWeight: 700 }}>
-              {frozenTimeStr} local at {location.name} ({tzLabel})
+              {frozenTimeStr} {t('local_at')} {location.name} ({tzLabel})
             </div>
           </div>
           <div style={{ fontSize: '10px', color: 'rgba(6,182,212,0.5)', fontStyle: 'italic', flex: 1 }}>
-             This is the same absolute moment the page was opened — only re-expressed in the selected location's local time. Refresh the browser to get a new Prashna moment.
+             {t('prashna_disclaimer_top')}
           </div>
         </div>
 
@@ -286,7 +322,7 @@ export default function PrashnaView({ lang = 'en' }) {
           display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center'
         }}>
           <MapPin size={14} color="var(--gold)" />
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Prashna Location:</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>{t('prashna_location')}</span>
 
           {/* City dropdown */}
           <select
@@ -308,7 +344,6 @@ export default function PrashnaView({ lang = 'en' }) {
             <option value="">— Custom (use map) —</option>
             {PRESET_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
           </select>
-
           {/* Map button */}
           <button
             onClick={() => {
@@ -325,7 +360,7 @@ export default function PrashnaView({ lang = 'en' }) {
               cursor: 'pointer', fontSize: '11px', fontWeight: 600
             }}
           >
-            <Map size={13} /> Map
+            <Map size={13} /> {t('map_btn')}
           </button>
 
           {/* Current location display */}
@@ -341,7 +376,7 @@ export default function PrashnaView({ lang = 'en' }) {
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '40px 0', color: '#06b6d4', fontSize: '13px' }}>
             <RefreshCw size={18} style={{ animation: 'spin-slow 1s linear infinite' }} />
-            Calculating Prashna chart…
+            {t('calc_prashna')}
           </div>
         ) : error ? (
           <div style={{ padding: '14px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#f87171', fontSize: '12px' }}>
@@ -352,7 +387,7 @@ export default function PrashnaView({ lang = 'en' }) {
             {/* Rasi Chart */}
             <div>
               <div style={{ fontSize: '11px', color: '#06b6d4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                 Prashna Rasi Chart
+                 {t('prashna_rasi_chart')}
               </div>
               <VedicChart
                 planets={prashnaData.planets}
@@ -375,19 +410,19 @@ export default function PrashnaView({ lang = 'en' }) {
                 }}>
                   <div style={{ fontSize: '28px' }}>{lagna.rasi.symbol}</div>
                   <div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prashna Lagna</div>
-                    <div style={{ fontSize: '17px', fontWeight: 800, color: '#06b6d4' }}>{lagna.rasi.name}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prashna_lagna')}</div>
+                    <div style={{ fontSize: '17px', fontWeight: 800, color: '#06b6d4' }}>{translateZodiac(lagna.rasi.name)}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {Math.floor(lagna.rasi.deg)}° {Math.floor((lagna.rasi.deg % 1) * 60)}' in {lagna.rasi.name}
+                      {Math.floor(lagna.rasi.deg)}° {Math.floor((lagna.rasi.deg % 1) * 60)}' in {translateZodiac(lagna.rasi.name)}
                     </div>
                   </div>
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Moon in</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>{t('moon_in')}</div>
                     <div style={{ fontSize: '14px', fontWeight: 700, color: '#c084fc' }}>
-                      {planets?.['Moon']?.rasi?.symbol} {planets?.['Moon']?.rasi?.name}
+                      {planets?.['Moon']?.rasi?.symbol} {translateZodiac(planets?.['Moon']?.rasi?.name)}
                     </div>
                     <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {planets?.['Moon']?.nakshatra?.name}
+                      {translateNakshatra(planets?.['Moon']?.nakshatra?.name)}
                     </div>
                   </div>
                 </div>
@@ -402,13 +437,13 @@ export default function PrashnaView({ lang = 'en' }) {
                   padding: '14px 16px'
                 }}>
                   <div style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '12px', marginBottom: '10px' }}>
-                     Current Panchang
+                     {t('current_panchang')}
                   </div>
-                  <PanchangRow label="Vara (Weekday)" value={panchang.vara} />
-                  <PanchangRow label="Tithi" value={`${panchang.tithi.paksha} ${panchang.tithi.name} (${Math.round(panchang.tithi.percent)}%)`} />
-                  <PanchangRow label="Nakshatra" value={panchang.nakshatra} />
-                  <PanchangRow label="Yoga" value={panchang.yoga} />
-                  <PanchangRow label="Karana" value={panchang.karana} />
+                  <PanchangRow label={t('vara_label')} value={translateWeekday(panchang.vara)} />
+                  <PanchangRow label={t('tithi_label')} value={`${translatePaksha(panchang.tithi.paksha)} ${translateTithi(panchang.tithi.name)} (${Math.round(panchang.tithi.percent)}%)`} />
+                  <PanchangRow label={t('nakshatra_label')} value={translateNakshatra(panchang.nakshatra)} />
+                  <PanchangRow label={t('yoga_label')} value={translateYoga(panchang.yoga)} />
+                  <PanchangRow label={t('karana_label')} value={translateKarana(panchang.karana)} />
                 </div>
               )}
 
@@ -421,7 +456,7 @@ export default function PrashnaView({ lang = 'en' }) {
                   padding: '14px 16px'
                 }}>
                   <div style={{ fontWeight: 700, color: '#06b6d4', fontSize: '12px', marginBottom: '10px' }}>
-                     Key Positions Now
+                     {t('key_positions')}
                   </div>
                   {['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu'].map(name => {
                     const p = planets[name];
@@ -431,9 +466,9 @@ export default function PrashnaView({ lang = 'en' }) {
                         display: 'flex', justifyContent: 'space-between',
                         padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.03)'
                       }}>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, minWidth: '65px' }}>{name}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, minWidth: '65px' }}>{translatePlanet(name)}</span>
                         <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                          {p.rasi.symbol} {p.rasi.name} {Math.floor(p.rasi.deg)}°
+                          {p.rasi.symbol} {translateZodiac(p.rasi.name)} {Math.floor(p.rasi.deg)}°
                           {p.isRetrograde && <span style={{ color: '#f59e0b', fontSize: '9px', marginLeft: '4px' }}>℞</span>}
                         </span>
                       </div>
@@ -451,7 +486,7 @@ export default function PrashnaView({ lang = 'en' }) {
           borderTop: '1px solid rgba(255,255,255,0.04)',
           paddingTop: '10px', lineHeight: 1.6
         }}>
-          <strong>Prashna Jyotish</strong>: The Prashna (question) chart is cast for the exact moment a question arises in the mind or is put to an astrologer. The Lagna and Moon placement at this moment reveal the answer. This chart reflects the cosmic moment you opened this page — a Prashna cannot be recast for the same question. Custom map locations use a longitude-based timezone estimate, which is geometric only and does not account for political boundaries or daylight-saving rules — please verify for unusual locations.
+          <strong>{lang === 'hi' ? 'प्रश्न ज्योतिष' : 'Prashna Jyotish'}</strong>: {t('prashna_disclaimer_bottom')}
         </div>
       </div>
 
@@ -471,7 +506,7 @@ export default function PrashnaView({ lang = 'en' }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, color: '#06b6d4', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
-                <Map size={16} /> Choose Prashna Location
+                <Map size={16} /> {t('choose_prashna_loc')}
               </h3>
               <button onClick={() => setShowMapModal(false)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -483,7 +518,7 @@ export default function PrashnaView({ lang = 'en' }) {
               <div style={{ position: 'relative', flex: 1 }}>
                 <input
                   type="text"
-                  placeholder="Search city or place…"
+                  placeholder={t('search_city_place')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   style={{
@@ -498,7 +533,7 @@ export default function PrashnaView({ lang = 'en' }) {
                 padding: '10px 16px', borderRadius: '8px', background: '#06b6d4',
                 color: 'black', fontWeight: 700, border: 'none', cursor: 'pointer'
               }}>
-                Search
+                {t('search_btn')}
               </button>
             </form>
 
@@ -510,17 +545,17 @@ export default function PrashnaView({ lang = 'en' }) {
             />
 
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              📍 Click on map or drag marker. The timezone will be estimated from longitude — please verify for unusual locations.
+              📍 {t('map_picker_help')}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button onClick={() => setShowMapModal(false)}
                 style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                Cancel
+                {t('cancel')}
               </button>
               <button onClick={handleConfirmLocation}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 20px', borderRadius: '8px', background: '#06b6d4', color: 'black', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
-                <Check size={14} /> Use This Location
+                <Check size={14} /> {t('use_this_loc')}
               </button>
             </div>
           </div>

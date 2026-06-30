@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { formatLongitude } from '../utils/astrology';
+import { translations } from '../utils/translations';
 
 const PLANET_EMOJIS = {
   Lagna: '🌀',
@@ -17,8 +17,13 @@ const PLANET_EMOJIS = {
   Pluto: '💀'
 };
 
-export default function PlanetaryTable({ planets }) {
+export default function PlanetaryTable({ planets, lang = 'en' }) {
   const [showOuterPlanets, setShowOuterPlanets] = useState(false);
+
+  const t = (key) => translations[lang]?.[key] || key;
+  const translatePlanet = (name) => translations[lang]?.planets?.[name] || name;
+  const translateZodiac = (name) => translations[lang]?.zodiacs?.[name] || name;
+  const translateNakshatra = (name) => translations[lang]?.nakshatras?.[name] || name;
 
   if (!planets) return null;
 
@@ -40,7 +45,9 @@ export default function PlanetaryTable({ planets }) {
   return (
     <div className="card planetary-table-card">
       <div className="card-header flex-row justify-between">
-        <h3 className="card-title text-gold">Planetary Longitudes & Coordinates</h3>
+        <h3 className="card-title text-gold">
+          {lang === 'hi' ? 'ग्रहों के स्पष्ट रेखांश और निर्देशांक' : 'Planetary Longitudes & Coordinates'}
+        </h3>
         <label className="checkbox-container flex-row text-xs cursor-pointer select-none">
           <input
             type="checkbox"
@@ -48,7 +55,7 @@ export default function PlanetaryTable({ planets }) {
             onChange={(e) => setShowOuterPlanets(e.target.checked)}
             className="custom-checkbox"
           />
-          Show Outer Planets (Uranus, Neptune, Pluto)
+          {lang === 'hi' ? 'बाहरी ग्रह दिखाएं (अरुण, वरुण, यम)' : 'Show Outer Planets (Uranus, Neptune, Pluto)'}
         </label>
       </div>
 
@@ -56,12 +63,12 @@ export default function PlanetaryTable({ planets }) {
         <table className="astro-table">
           <thead>
             <tr>
-              <th>Planet</th>
-              <th className="text-center">Type</th>
-              <th>Longitude</th>
-              <th>Zodiac Sign (Rasi)</th>
-              <th>Nakshatra (Pada)</th>
-              <th>Nakshatra Lord</th>
+              <th>{lang === 'hi' ? 'ग्रह' : 'Planet'}</th>
+              <th className="text-center">{lang === 'hi' ? 'स्थिति' : 'Type'}</th>
+              <th>{lang === 'hi' ? 'रेखांश (डिग्री)' : 'Longitude'}</th>
+              <th>{lang === 'hi' ? 'राशि (Zodiac)' : 'Zodiac Sign (Rasi)'}</th>
+              <th>{lang === 'hi' ? 'नक्षत्र (चरण)' : 'Nakshatra (Pada)'}</th>
+              <th>{lang === 'hi' ? 'नक्षत्र स्वामी' : 'Nakshatra Lord'}</th>
             </tr>
           </thead>
           <tbody>
@@ -81,21 +88,21 @@ export default function PlanetaryTable({ planets }) {
                   <td className="cell-planet font-semibold">
                     <span className="emoji-space">{PLANET_EMOJIS[name] || '✨'}</span>
                     <span className={isLagna ? 'text-gold font-bold' : ''}>
-                      {name}
+                      {translatePlanet(name)}
                     </span>
                   </td>
 
                   {/* Retrograde Status */}
                   <td className="text-center">
                     {isLagna ? (
-                      <span className="text-slate-500 text-xs">Asc</span>
+                      <span className="text-slate-500 text-xs">{lang === 'hi' ? 'लग्न' : 'Asc'}</span>
                     ) : isRetro ? (
                       <span className="badge badge-retro" title="Retrograde">
-                        R
+                        {lang === 'hi' ? 'व' : 'R'}
                       </span>
                     ) : (
                       <span className="badge badge-direct" title="Direct">
-                        D
+                        {lang === 'hi' ? 'मा' : 'D'}
                       </span>
                     )}
                   </td>
@@ -108,29 +115,31 @@ export default function PlanetaryTable({ planets }) {
                   {/* Rasi Sign */}
                   <td>
                     <div className="flex-row gap-1">
-                      <span className="sign-symbol text-gold" title={p.rasi.name}>
+                      <span className="sign-symbol text-gold" title={translateZodiac(p.rasi.name)}>
                         {p.rasi.symbol}
                       </span>
                       <span>
-                        {p.rasi.name}
+                        {translateZodiac(p.rasi.name)}
                       </span>
-                      <span className="hindi-label">
-                        ({p.rasi.hindi})
-                      </span>
+                      {lang !== 'hi' && (
+                        <span className="hindi-label">
+                          ({p.rasi.hindi})
+                        </span>
+                      )}
                     </div>
                   </td>
 
                   {/* Nakshatra (Pada) */}
                   <td className="text-xs">
-                    <span className="font-semibold text-slate-100">{p.nakshatra.name}</span>
+                    <span className="font-semibold text-slate-100">{translateNakshatra(p.nakshatra.name)}</span>
                     <span className="badge-pada">
-                      Pada {p.nakshatra.pada}
+                      {lang === 'hi' ? `चरण ${p.nakshatra.pada}` : `Pada ${p.nakshatra.pada}`}
                     </span>
                   </td>
 
                   {/* Nakshatra Lord */}
                   <td className="text-xs text-slate-400">
-                    {p.nakshatra.lord}
+                    {translatePlanet(p.nakshatra.lord)}
                   </td>
                 </tr>
               );

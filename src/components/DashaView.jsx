@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { calculateVimshottariDasha } from '../utils/astrology';
 import { Calendar, ChevronDown, ChevronRight, Zap } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function DashaView({ moonLong, birthDate }) {
+export default function DashaView({ moonLong, birthDate, lang = 'en' }) {
   const [expandedDasha, setExpandedDasha] = useState(null);
+
+  const translatePlanet = (name) => translations[lang]?.planets?.[name] || name;
 
   if (!moonLong || !birthDate) return null;
 
@@ -12,7 +15,7 @@ export default function DashaView({ moonLong, birthDate }) {
   const now = new Date();
 
   const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -36,9 +39,11 @@ export default function DashaView({ moonLong, birthDate }) {
       <div className="card-header flex-row justify-between">
         <h3 className="card-title text-gold flex-row">
           <Zap className="icon-pulse" />
-          Vimshottari Dasha
+          {lang === 'hi' ? 'विंशोत्तरी दशा' : 'Vimshottari Dasha'}
         </h3>
-        <span className="subtitle">120 Years Planetary Cycles</span>
+        <span className="subtitle">
+          {lang === 'hi' ? '120 वर्ष का महादशा चक्र' : '120 Years Planetary Cycles'}
+        </span>
       </div>
 
       <div className="dasha-list-container custom-scrollbar">
@@ -63,11 +68,11 @@ export default function DashaView({ moonLong, birthDate }) {
                     <ChevronRight className="chevron-icon" />
                   )}
                   <span className={`dasha-lord-label ${isActive ? 'text-gold' : ''}`}>
-                    {d.lord} Maha Dasha
+                    {translatePlanet(d.lord)} {lang === 'hi' ? 'महादशा' : 'Maha Dasha'}
                   </span>
                   {isActive && (
                     <span className="badge badge-active icon-pulse flex-row">
-                      Active Now
+                      {lang === 'hi' ? 'वर्तमान में सक्रिय' : 'Active Now'}
                     </span>
                   )}
                 </div>
@@ -84,7 +89,7 @@ export default function DashaView({ moonLong, birthDate }) {
               {isExpanded && (
                 <div className="antar-dasha-container">
                   <div className="antar-title font-bold">
-                    Antar Dashas (Sub-periods)
+                    {lang === 'hi' ? 'अंतर्दशा (उप-अवधि)' : 'Antar Dashas (Sub-periods)'}
                   </div>
                   <div className="antar-list divide-y-subtle">
                     {d.antarDashas.map((sub, sIdx) => {
@@ -98,15 +103,15 @@ export default function DashaView({ moonLong, birthDate }) {
                         >
                           <div className="flex-row gap-2">
                             <span className="bullet-dot" />
-                            <span>{d.lord} – {sub.lord}</span>
+                            <span>{translatePlanet(d.lord)} – {translatePlanet(sub.lord)}</span>
                             {isSubActive && (
                               <span className="badge badge-current-sub text-xs">
-                                Current
+                                {lang === 'hi' ? 'वर्तमान' : 'Current'}
                               </span>
                             )}
                           </div>
                           <div className="antar-date font-mono text-xs text-slate-500">
-                            {formatDate(sub.start)} to {formatDate(sub.end)}
+                            {formatDate(sub.start)} {lang === 'hi' ? 'से' : 'to'} {formatDate(sub.end)}
                           </div>
                         </div>
                       );
