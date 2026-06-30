@@ -78,6 +78,14 @@ export default function VedicChart({
   const [chartStyle, setChartStyle] = useState('south');
   const [activeVarga, setActiveVarga] = useState(defaultVarga);
   const [viewMode, setViewMode] = useState('single'); // 'single' or 'grid'
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobileScreen(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [internalHouseOffset, setInternalHouseOffset] = useState(0);
   const [menuState, setMenuState] = useState({
@@ -218,6 +226,8 @@ export default function VedicChart({
       ? getVargaChartDataFromAPI(divisionalCharts, vargaNum, planets)
       : getVargaChartData(planets, vargaNum);
 
+    const isSmall = size === 'small' || isMobileScreen;
+
     const cells = Array.from({ length: 4 }, () => Array(4).fill(null));
     southBoxMapping.forEach(({ sign, r, c }) => {
       cells[r][c] = {
@@ -256,8 +266,8 @@ export default function VedicChart({
                     background: 'rgba(10,12,22,0.85)',
                     border: '1px solid rgba(255,255,255,0.05)'
                   }}>
-                    <span style={{ fontSize: size==='small'?'9px':'12px', color: 'var(--text-muted)' }}>D-{vargaNum}</span>
-                    <span style={{ fontSize: size==='small'?'8px':'10px', color: 'rgba(255,255,255,0.3)' }}>Lahiri</span>
+                    <span style={{ fontSize: isSmall ? '9px' : '12px', color: 'var(--text-muted)' }}>D-{vargaNum}</span>
+                    <span style={{ fontSize: isSmall ? '8px' : '10px', color: 'rgba(255,255,255,0.3)' }}>Lahiri</span>
                   </div>
                 );
               }
@@ -274,20 +284,20 @@ export default function VedicChart({
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  padding: size === 'small' ? '2px' : '6px',
+                  padding: isSmall ? '2px' : '6px',
                   position: 'relative'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={{ fontSize: size==='small'?'8px':'10px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: isSmall ? '8px' : '10px', fontWeight: 600, color: 'var(--text-muted)' }}>
                     {cell.signName}
                   </span>
-                  <span style={{ fontSize: size==='small'?'7px':'9px', color: 'rgba(255,255,255,0.15)' }}>
+                  <span style={{ fontSize: isSmall ? '7px' : '9px', color: 'rgba(255,255,255,0.15)' }}>
                     {cell.signIndex + 1}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1 }}>
-                  {renderPlanetBadges(cell.planets, size)}
+                  {renderPlanetBadges(cell.planets, isSmall ? 'small' : 'normal')}
                 </div>
               </div>
             );
@@ -568,7 +578,7 @@ export default function VedicChart({
 
         {/* Viewport */}
         {viewMode === 'single' ? (
-          <div className="chart-viewport" style={{ padding: '20px 0', minHeight: '380px' }}>
+          <div className="chart-viewport" style={{ padding: isMobileScreen ? '10px 0' : '20px 0', minHeight: isMobileScreen ? '290px' : '380px' }}>
             {chartStyle === 'south' ? renderSouthIndianChart(activeVarga) : renderNorthIndianChart(activeVarga)}
           </div>
         ) : (

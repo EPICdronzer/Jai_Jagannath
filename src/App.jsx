@@ -219,7 +219,7 @@ export default function App() {
                 style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderColor: 'rgba(255,255,255,0.1)' }}
                 onClick={() => setIsMenuOpen(false)}
               >
-                🚪 {lang === 'hi' ? 'मेनू बंद करें' : 'Close Menu'}
+                 {lang === 'hi' ? 'मेनू बंद करें' : 'Close Menu'}
               </button>
             )}
           </div>
@@ -656,56 +656,56 @@ export default function App() {
                   {/* ── CHAKRAS TAB ── */}
                   {currentTab === 'chakras' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <ChakrasView rawData={birthData.raw} />
+                      <ChakrasView rawData={birthData.raw} lang={lang} />
                     </div>
                   )}
 
                   {/* ── BALAS TAB ── */}
                   {currentTab === 'balas' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <BalasView shadBala={birthData.raw?.shad_bala} bhavaBala={birthData.raw?.bhava_bala} />
+                      <BalasView shadBala={birthData.raw?.shad_bala} bhavaBala={birthData.raw?.bhava_bala} lang={lang} />
                     </div>
                   )}
 
                   {/* ── ASHTAKAVARGA TAB ── */}
                   {currentTab === 'ashtakavarga' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <AshtakavargaView ashtakavarga={birthData.raw?.ashtakavarga} />
+                      <AshtakavargaView ashtakavarga={birthData.raw?.ashtakavarga} lang={lang} />
                     </div>
                   )}
 
                   {/* ── YOGAS TAB ── */}
                   {currentTab === 'yogas' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <YogasView yogas={birthData.raw?.yogas} doshas={birthData.raw?.doshas} />
+                      <YogasView yogas={birthData.raw?.yogas} doshas={birthData.raw?.doshas} lang={lang} />
                     </div>
                   )}
 
                   {/* ── LONGEVITY TAB ── */}
                   {currentTab === 'longevity' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <LongevityView longevity={birthData.raw?.longevity_prediction} />
+                      <LongevityView longevity={birthData.raw?.longevity_prediction} lang={lang} />
                     </div>
                   )}
 
                   {/* ── ARUDHAS TAB ── */}
                   {currentTab === 'arudhas' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <ArudhasView arudhaPadhas={birthData.raw?.arudha_padhas} />
+                      <ArudhasView arudhaPadhas={birthData.raw?.arudha_padhas} lang={lang} />
                     </div>
                   )}
 
                   {/* ── ARGALA TAB ── */}
                   {currentTab === 'argala' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <ArgalaView rawData={birthData.raw} />
+                      <ArgalaView rawData={birthData.raw} lang={lang} />
                     </div>
                   )}
 
                   {/* ── SAHAMS TAB ── */}
                   {currentTab === 'sahams' && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                      <SahamsView rawData={birthData.raw} />
+                      <SahamsView rawData={birthData.raw} lang={lang} />
                     </div>
                   )}
 
@@ -716,7 +716,70 @@ export default function App() {
                     </div>
                   )}
                 </>
-              ) : null
+              ) : (
+                <div style={{
+                  maxWidth: '480px',
+                  margin: '40px auto',
+                  padding: '24px 20px',
+                  borderRadius: '16px',
+                  background: 'rgba(239, 68, 68, 0.03)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  boxShadow: '0 8px 32px rgba(239, 68, 68, 0.04)',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '14px'
+                }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '50%',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    color: '#f87171',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    animation: 'pulse 2s infinite'
+                  }}>
+                    ⚠️
+                  </div>
+                  <h3 style={{ color: '#f87171', margin: 0, fontSize: '15px', fontWeight: 700 }}>
+                    {lang === 'hi' ? 'जन्म विवरण आवश्यक है' : 'Birth Details Required'}
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.6, margin: 0 }}>
+                    {lang === 'hi'
+                      ? 'इस विश्लेषण को देखने के लिए, कृपया पहले "मूल जानकारी" (Basic Info) टैब पर जाएं और अपना जन्म विवरण भरकर कुंडली की गणना करें।'
+                      : 'To view this analysis, please first navigate to the "Basic Info" tab and fill out the birth form to calculate your chart.'}
+                  </p>
+                  <button 
+                    onClick={() => setCurrentTab('basics')}
+                    style={{
+                      marginTop: '6px',
+                      padding: '8px 18px',
+                      borderRadius: '8px',
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      border: '1px solid rgba(239, 68, 68, 0.25)',
+                      color: '#fca5a5',
+                      fontWeight: 600,
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(239, 68, 68, 0.18)';
+                      e.target.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(239, 68, 68, 0.08)';
+                      e.target.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+                    }}
+                  >
+                    {lang === 'hi' ? 'मूल जानकारी पर जाएं' : 'Go to Basic Info'}
+                  </button>
+                </div>
+              )
             )}
           </>
         )}
