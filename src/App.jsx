@@ -49,6 +49,26 @@ export default function App() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
+  const [prashnaLocation, setPrashnaLocation] = useState({
+    name: 'New Delhi, India',
+    lat: 28.6139,
+    lon: 77.2090,
+    timezone: 5.5
+  });
+  const [prashnaCityPreset, setPrashnaCityPreset] = useState('New Delhi, India');
+  const [prashnaData, setPrashnaData] = useState(null);
+  const [prashnaInstant] = useState(() => Date.now());
+
+  const sharedPrashnaData = useMemo(() => ({
+    location: prashnaLocation,
+    setLocation: setPrashnaLocation,
+    cityPreset: prashnaCityPreset,
+    setCityPreset: setPrashnaCityPreset,
+    data: prashnaData,
+    setData: setPrashnaData,
+    instant: prashnaInstant
+  }), [prashnaLocation, prashnaCityPreset, prashnaData, prashnaInstant]);
+
   const navRef = useRef(null);
   const moreMenuRef = useRef(null);
   const t = (key) => translations[lang]?.[key] || key;
@@ -486,13 +506,14 @@ export default function App() {
 
         {/* Tab Content */}
         {params === null ? (
-          /* Empty Initial State - Welcome Panel with Prashna Chart */
-          <div className="basics-grid" style={{ minHeight: '60vh' }}>
-            <div className="basics-left">
-              <BirthForm onSubmit={handleFormSubmit} lang={lang} collectExtra={true} />
-            </div>
-            <div className="basics-right" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <PrashnaView lang={lang} />
+          currentTab === 'basics' ? (
+            /* Empty Initial State - Welcome Panel with Prashna Chart */
+            <div className="basics-grid" style={{ minHeight: '60vh' }}>
+              <div className="basics-left">
+                <BirthForm onSubmit={handleFormSubmit} lang={lang} collectExtra={true} />
+              </div>
+              <div className="basics-right" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <PrashnaView lang={lang} sharedData={sharedPrashnaData} />
               <div style={{
                 textAlign: 'center', padding: '24px', borderRadius: '16px',
                 background: 'linear-gradient(135deg, rgba(10,12,22,0.95), rgba(16,18,34,0.95))',
@@ -513,7 +534,74 @@ export default function App() {
               </div>
             </div>
           </div>
+        ) : currentTab === 'prashna' ? (
+          <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+            <PrashnaView lang={lang} sharedData={sharedPrashnaData} />
+          </div>
         ) : (
+          <div style={{
+            maxWidth: '480px',
+            margin: '40px auto',
+            padding: '24px 20px',
+            borderRadius: '16px',
+            background: 'rgba(239, 68, 68, 0.03)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            boxShadow: '0 8px 32px rgba(239, 68, 68, 0.04)',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '14px'
+          }}>
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              background: 'rgba(239, 68, 68, 0.12)',
+              color: '#f87171',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              animation: 'pulse 2s infinite'
+            }}>
+              ⚠️
+            </div>
+            <h3 style={{ color: '#f87171', margin: 0, fontSize: '15px', fontWeight: 700 }}>
+              {lang === 'hi' ? 'जन्म विवरण आवश्यक है' : 'Birth Details Required'}
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.6, margin: 0 }}>
+              {lang === 'hi'
+                ? 'इस विश्लेषण को देखने के लिए, कृपया पहले "मूल जानकारी" (Basic Info) टैब पर जाएं और अपना जन्म विवरण भरकर कुंडली की गणना करें।'
+                : 'To view this analysis, please first navigate to the "Basic Info" tab and fill out the birth form to calculate your chart.'}
+            </p>
+            <button 
+              onClick={() => setCurrentTab('basics')}
+              style={{
+                marginTop: '6px',
+                padding: '8px 18px',
+                borderRadius: '8px',
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#fca5a5',
+                fontWeight: 600,
+                fontSize: '11px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(239, 68, 68, 0.18)';
+                e.target.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(239, 68, 68, 0.08)';
+                e.target.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+              }}
+            >
+              {lang === 'hi' ? 'मूल जानकारी पर जाएं' : 'Go to Basic Info'}
+            </button>
+          </div>
+        )) : (
           /* Active calculated state */
           <>
             {/* ── BASICS TAB (Form stays permanently mounted on left) ── */}
@@ -576,7 +664,7 @@ export default function App() {
                       <PlanetaryTable planets={birthData.planets} lang={lang} />
                       <PlanetaryStatesView planets={birthData.planets} lang={lang} />
                       {/* Prashna chart always shown on basics tab */}
-                      <PrashnaView lang={lang} />
+                      <PrashnaView lang={lang} sharedData={sharedPrashnaData} />
                     </>
                   ) : null}
                 </div>
@@ -588,7 +676,7 @@ export default function App() {
               currentTab === 'prashna' ? (
                 /* Prashna tab doesn't need birthData - always show */
                 <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
-                  <PrashnaView lang={lang} />
+                  <PrashnaView lang={lang} sharedData={sharedPrashnaData} />
                 </div>
               ) : loading ? (
                 <div className="loading-container" style={{ padding: '60px 0' }}>

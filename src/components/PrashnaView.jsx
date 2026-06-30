@@ -42,7 +42,7 @@ function PanchangRow({ label, value }) {
   );
 }
 
-export default function PrashnaView({ lang = 'en' }) {
+export default function PrashnaView({ lang = 'en', sharedData }) {
   const t = (key) => translations[lang]?.[key] || key;
 
   const translatePlanet = (name) => {
@@ -82,7 +82,7 @@ export default function PrashnaView({ lang = 'en' }) {
   //    browser refresh. Stored as epoch ms (UTC-based), NOT as local
   //    wall-clock digits, so it's independent of any timezone choice. ──
   const frozenInstantRef = useRef(Date.now());
-  const frozenInstant = frozenInstantRef.current;
+  const frozenInstant = sharedData ? sharedData.instant : frozenInstantRef.current;
 
   // ── Live clock (display only, does NOT affect calculations) ──
   const [clockDisplay, setClockDisplay] = useState(new Date());
@@ -92,17 +92,25 @@ export default function PrashnaView({ lang = 'en' }) {
   }, []);
 
   // ── Location state ──
-  const [location, setLocation] = useState(DEFAULT_LOCATION);
-  const [cityPreset, setCityPreset] = useState(DEFAULT_LOCATION.name);
+  const [localLocation, setLocalLocation] = useState(DEFAULT_LOCATION);
+  const [localCityPreset, setLocalCityPreset] = useState(DEFAULT_LOCATION.name);
+  const [localPrashnaData, setLocalPrashnaData] = useState(null);
+
+  const location = sharedData ? sharedData.location : localLocation;
+  const setLocation = sharedData ? sharedData.setLocation : setLocalLocation;
+  const cityPreset = sharedData ? sharedData.cityPreset : localCityPreset;
+  const setCityPreset = sharedData ? sharedData.setCityPreset : setLocalCityPreset;
+  const prashnaData = sharedData ? sharedData.data : localPrashnaData;
+  const setPrashnaData = sharedData ? sharedData.setData : setLocalPrashnaData;
+
   const [showMapModal, setShowMapModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mapError, setMapError] = useState('');
   const mapRef = useRef(null);
   const markerRef = useRef(null);
-  const tempCoords = useRef({ lat: DEFAULT_LOCATION.lat, lon: DEFAULT_LOCATION.lon, name: DEFAULT_LOCATION.name });
+  const tempCoords = useRef({ lat: location.lat, lon: location.lon, name: location.name });
 
   // ── Calculated data ──
-  const [prashnaData, setPrashnaData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
