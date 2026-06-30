@@ -255,8 +255,8 @@ export default function App() {
             )}
             <div className="header-logo">🙏</div>
             <div>
-              <div className="header-title-line1">JAI JAGANNATH</div>
-              <div className="header-title-line2">Vedic Astrology Workstation</div>
+              <div className="header-title-line1">Astro Traveler</div>
+              <div className="header-title-line2">JAI JAGANNATH</div>
             </div>
           </div>
           
